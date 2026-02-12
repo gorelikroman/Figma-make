@@ -1,0 +1,220 @@
+<%
+/**
+ * Icon Button Component
+ * 
+ * @param {string} [color='neutral'] - 'neutral' | 'outline' | 'primary' | 'simple'
+ * @param {string} [style='rectangle'] - 'rectangle' | 'circular'
+ * @param {boolean} [disabled=false] - Whether the button is disabled
+ * @param {string} [className=''] - Additional CSS classes to override defaults
+ * @param {string} [id=''] - ID for the button element
+ * @param {object} [handlers={}] - Event handlers (e.g., { click: 'handleIconButtonClick' })
+ * @param {object} [dataTags={}] - Data attributes to add to the button
+ * @param {string} [icon=''] - Path to custom icon (SVG or PNG). If not provided, uses default arrow icon
+ * @param {string} [iconImgId=''] - Optional unique ID for the icon img element (for direct DOM access)
+ * 
+ * TAILWIND JIT: Dynamic hover classes used by this component
+ * (Tailwind scans comments to detect classes for JIT compilation)
+ * 
+ * hover:bg-surface-card hover:bg-surface-selected hover:bg-primary-green-gradient
+ * hover:border hover:border-[1px] hover:border-border-white hover:border-border-subtle
+ * hover:shadow-none
+ * hover:[box-shadow:0_12px_18px_0_rgba(206,208,216,0.698),0_-12px_16px_0_rgba(255,255,255,0.816)]
+ * hover:[box-shadow:0_2px_8px_0_rgba(0,0,0,0.15)]
+ * hover:[box-shadow:inset_0_0_12px_0_#cdeb9c]
+ * 
+ * group-hover:!text-icons-primary group-hover:!text-icons-on_primary
+ */
+
+// Extract props as object with defaults
+const props = {
+    color: locals.color || 'neutral',
+    style: locals.style || 'rectangle',
+    disabled: locals.disabled || false,
+    className: locals.className || '',
+    id: locals.id || '',
+    handlers: locals.handlers || {},
+    dataTags: locals.dataTags || {},
+    icon: locals.icon || '',
+    iconImgId: locals.iconImgId || ''
+};
+
+// Icon SVG using currentColor so it can be controlled via CSS
+// Size 24x24 for all button types
+const iconSvg = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 11.0727C3.48789 11.0727 3.07275 11.4879 3.07275 12C3.07275 12.5121 3.48789 12.9273 4 12.9273L4 12L4 11.0727ZM20.6557 12.6557C21.0178 12.2936 21.0178 11.7064 20.6557 11.3443L14.7547 5.44333C14.3925 5.08121 13.8054 5.08121 13.4433 5.44333C13.0812 5.80544 13.0812 6.39255 13.4433 6.75466L18.6887 12L13.4433 17.2453C13.0812 17.6075 13.0812 18.1946 13.4433 18.5567C13.8054 18.9188 14.3925 18.9188 14.7547 18.5567L20.6557 12.6557ZM4 12L4 12.9273L20 12.9273L20 12L20 11.0727L4 11.0727L4 12Z" fill="currentColor"/></svg>';
+
+// Color configurations for each color type
+const colorConfig = {
+  neutral: {
+    idle: {
+      background: 'bg-surface-card',
+      border: 'border border-border-white',
+      iconColor: 'text-icons-primary',
+      shadow: '[box-shadow:0_12px_18px_0_rgba(206,208,216,0.698),0_-12px_16px_0_rgba(255,255,255,0.816)]',
+      iconSize: iconSvg
+    },
+    focus: {
+      background: 'bg-surface-card',
+      border: 'border-[1px] border-border-white',
+      iconColor: 'text-icons-primary',
+      shadow: '',
+      iconSize: iconSvg
+    },
+    disabled: {
+      background: 'bg-surface-card',
+      border: 'border border-border-white',
+      iconColor: 'text-icons-disabled',
+      shadow: '',
+      iconSize: iconSvg
+    }
+  },
+  outline: {
+    idle: {
+      background: '',
+      border: 'border border-border-subtle',
+      iconColor: 'text-icons-primary',
+      shadow: '',
+      iconSize: iconSvg
+    },
+    focus: {
+      background: 'bg-surface-selected',
+      border: 'border border-border-white',
+      iconColor: 'text-icons-primary',
+      shadow: '',
+      iconSize: iconSvg
+    },
+    disabled: {
+      background: '',
+      border: 'border border-border-disabled',
+      iconColor: 'text-icons-disabled',
+      shadow: '',
+      iconSize: iconSvg
+    }
+  },
+  primary: {
+    idle: {
+      background: 'bg-primary-green-gradient',
+      border: 'border border-border-white',
+      iconColor: 'text-icons-on_primary',
+      shadow: '[box-shadow:0_2px_8px_0_rgba(0,0,0,0.15)]',
+      iconSize: iconSvg
+    },
+    focus: {
+      background: 'bg-primary-green-gradient',
+      border: 'border border-border-white',
+      iconColor: 'text-icons-on_primary',
+      shadow: '[box-shadow:inset_0_0_12px_0_#cdeb9c]',
+      iconSize: iconSvg
+    },
+    disabled: {
+      background: 'bg-transparent',
+      border: 'border border-border-white',
+      iconColor: 'text-icons-disabled',
+      shadow: '',
+      iconSize: iconSvg
+    }
+  },
+  simple: {
+    idle: {
+      background: 'bg-surface-card',
+      border: 'border border-border-white',
+      iconColor: 'text-icons-primary',
+      shadow: '[box-shadow:0_12px_18px_0_rgba(206,208,216,0.698),0_-12px_16px_0_rgba(255,255,255,0.816)]',
+      iconSize: iconSvg
+    },
+    focus: {
+      background: 'bg-surface-card',
+      border: 'border border-border-white',
+      iconColor: 'text-icons-primary',
+      shadow: '',
+      iconSize: iconSvg
+    },
+    disabled: {
+      background: 'bg-surface-card',
+      border: 'border border-border-white',
+      iconColor: 'text-icons-disabled',
+      shadow: '',
+      iconSize: iconSvg
+    }
+  }
+};
+
+// Get current color configuration
+const currentColorConfig = colorConfig[props.color] || colorConfig.neutral;
+const idleState = currentColorConfig.idle;
+const focusState = currentColorConfig.focus;
+const disabledState = currentColorConfig.disabled;
+
+// Determine border radius based on style
+const borderRadius = props.style === 'circular' ? 'rounded-full' : 'rounded-[16px]';
+
+// Build base classes
+let baseClasses = 'flex items-center justify-center p-4 transition-all duration-300 !outline-none focus:!outline-none focus-visible:!outline-none active:!outline-none';
+baseClasses += ` ${borderRadius}`;
+
+// State classes
+let stateClasses = '';
+if (props.disabled) {
+  stateClasses = `${disabledState.background} ${disabledState.border} ${disabledState.shadow} cursor-not-allowed`;
+} else {
+  stateClasses = `${idleState.background} ${idleState.border} ${idleState.shadow}`;
+  
+  // Add hover classes for background
+  if (focusState.background && focusState.background !== idleState.background) {
+    stateClasses += ` hover:${focusState.background}`;
+  }
+  
+  // Add hover classes for border
+  if (focusState.border && focusState.border !== idleState.border) {
+    // Split border classes and add hover: prefix to each
+    const borderClasses = focusState.border.split(' ');
+    borderClasses.forEach(cls => {
+      if (cls) stateClasses += ` hover:${cls}`;
+    });
+  }
+  
+  // Add hover classes for shadow
+  if (focusState.shadow && focusState.shadow !== idleState.shadow) {
+    stateClasses += ` hover:${focusState.shadow}`;
+  } else if (!focusState.shadow && idleState.shadow) {
+    stateClasses += ' hover:shadow-none';
+  }
+  
+  // Add group class for icon color transitions
+  if (focusState.iconColor && focusState.iconColor !== idleState.iconColor) {
+    baseClasses += ' group';
+  }
+}
+
+// Combine all classes - props.className appended at end to override defaults
+let allClasses = `${baseClasses} ${stateClasses} ${props.className}`.trim().replace(/\s+/g, ' ');
+%>
+<%
+// Generate data attributes string
+let dataAttributes = '';
+
+// Add custom data tags
+for (const [key, value] of Object.entries(props.dataTags)) {
+    dataAttributes += ` data-${key}="${value}"`;
+}
+
+// Add handler attributes (data-onclick, etc.)
+for (const [eventType, handlerName] of Object.entries(props.handlers)) {
+    if (handlerName) {
+        dataAttributes += ` data-on${eventType}="${handlerName}"`;
+    }
+}
+%>
+<button 
+    <% if (props.id) { %>id="<%= props.id %>"<% } %>
+    class="<%= allClasses %>"
+    <%= props.disabled ? 'disabled' : '' %>
+    <%- dataAttributes %>
+>
+    <span class="w-6 h-6 flex items-center justify-center pointer-events-none <%= props.disabled ? disabledState.iconColor : idleState.iconColor %><% if (!props.disabled && focusState.iconColor && focusState.iconColor !== idleState.iconColor) { %> group-hover:!<%= focusState.iconColor %><% } %>">
+        <% if (props.icon) { %>
+            <img <% if (props.iconImgId) { %>id="<%= props.iconImgId %>"<% } %> src="<%= props.icon %>" alt="" class="w-full h-full object-contain pointer-events-none" />
+        <% } else { %>
+            <%- props.disabled ? disabledState.iconSize : idleState.iconSize %>
+        <% } %>
+    </span>
+</button>

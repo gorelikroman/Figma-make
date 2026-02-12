@@ -1,0 +1,104 @@
+<%
+/**
+ * Main Progress Bar Component
+ * 
+ * @param {number} [percentage=0] - Progress percentage (0-100)
+ * @param {string} [className=''] - Additional CSS classes to override defaults
+ * @param {string} [progressBarId=''] - ID for the progress bar element
+ * @param {object} [handlers={}] - Event handlers (e.g., { input: 'updateUserProgress' })
+ * @param {object} [dataTags={}] - Data attributes to add to the progress bar
+ */
+
+// Extract props as object with defaults
+const props = {
+    percentage: Math.max(0, Math.min(100, locals.percentage || 0)), // Clamp between 0-100
+    className: locals.className || '',
+    progressBarId: locals.progressBarId || '',
+    handlers: locals.handlers || {},
+    dataTags: locals.dataTags || {}
+};
+
+// Generate data attributes string
+let dataAttributes = '';
+
+// Add custom data tags
+for (const [key, value] of Object.entries(props.dataTags)) {
+    dataAttributes += ` data-${key}="${value}"`;
+}
+
+// Add handler attributes (data-oninput, data-onchange, etc.)
+for (const [eventType, handlerName] of Object.entries(props.handlers)) {
+    if (handlerName) {
+        dataAttributes += ` data-on${eventType}="${handlerName}"`;
+    }
+}
+
+// Base classes - responsive, mobile-first
+// Background: #f1f1f1 (light grey), height: 8px, full rounded
+const baseClasses = 'w-full h-[8px] bg-[#f1f1f1] rounded-full overflow-hidden relative';
+%>
+
+<div 
+    <% if (props.progressBarId) { %>id="<%= props.progressBarId %>"<% } %>
+    class="<%= baseClasses %> <%= props.className %>"
+    <%- dataAttributes %>
+>
+    <!-- Progress Fill -->
+    <div 
+        class="h-full rounded-full transition-all duration-300 ease-out"
+        style="width: <%= props.percentage %>%; background-image: linear-gradient(90deg, rgba(21, 150, 124, 1) 0%, rgba(114, 179, 62, 1) 100%);"
+    ></div>
+</div>
+
+<% if (props.progressBarId) { %>
+<script>
+(function() {
+    const progressBar = document.getElementById('<%= props.progressBarId %>');
+    if (!progressBar) return;
+    
+    const fillElement = progressBar.querySelector('div');
+    if (!fillElement) return;
+    
+    // ============================================
+    // COMPONENT STATE MANAGER
+    // ============================================
+    const ProgressBarComponent = {
+        /**
+         * Update progress percentage
+         * @param {number} percentage - Progress percentage (0-100)
+         */
+        setPercentage: function(percentage) {
+            const clampedPercentage = Math.max(0, Math.min(100, percentage));
+            if (fillElement) {
+                fillElement.style.width = clampedPercentage + '%';
+            }
+        },
+        
+        /**
+         * Update progress (alias for setPercentage)
+         * @param {number} percentage - Progress percentage (0-100)
+         */
+        setProgress: function(percentage) {
+            this.setPercentage(percentage);
+        },
+        
+        /**
+         * Get current percentage
+         * @returns {number} Current percentage (0-100)
+         */
+        getPercentage: function() {
+            if (fillElement) {
+                const width = fillElement.style.width;
+                return parseFloat(width) || 0;
+            }
+            return 0;
+        }
+    };
+    
+    // Expose component methods globally for external access
+    progressBar._component = ProgressBarComponent;
+})();
+</script>
+<% } %>
+
+

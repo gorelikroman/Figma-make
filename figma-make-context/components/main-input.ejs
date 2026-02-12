@@ -1,0 +1,370 @@
+<%
+/**
+ * Main Input Component
+ * 
+ * @param {string} placeholder - Placeholder text for the input
+ * @param {boolean} [disabled=false] - Whether the input is disabled
+ * @param {string} [label=''] - Optional label above input
+ * @param {boolean} [obligatory=false] - Show red asterisk next to label (required field)
+ * @param {string} [description=''] - Optional description below input
+ * @param {number} [maxLength=0] - Optional max character count (0 = no limit)
+ * @param {string} [leftIcon=''] - Optional left icon path (relative to public)
+ * @param {string} [rightIcon=''] - Optional right icon path (relative to public)
+ * @param {string} [className=''] - Additional CSS classes to override defaults
+ * @param {string} [containerClassName=''] - Additional CSS classes for the input container
+ * @param {string} [inputId=''] - ID for the input element
+ * @param {string} [name=''] - Name attribute for the input (for forms)
+ * @param {object} [handlers={}] - Event handlers (e.g., { focus: 'trackFocus', input: 'validateUserInput', blur: 'validateUserInput' })
+ * @param {string} [rightIconHandler=''] - Click handler for right icon (e.g., 'clearInputField')
+ * @param {object} [dataTags={}] - Data attributes to add to the input
+ * @param {string} [clearIcon=''] - Optional clear/delete icon that appears when input has value
+ * @param {string} [clearIconPosition=''] - Position of clear icon: 'left' or 'right' (if not set, no dynamic switching)
+ * @param {string} [leftIconClassName=''] - Additional CSS classes for left icon image
+ * @param {string} [rightIconClassName=''] - Additional CSS classes for right icon image
+ * @param {string} [clearIconClassName=''] - Additional CSS classes for clear icon image
+ * @param {string} [leftIconStyle=''] - Inline styles for left icon image
+ * @param {string} [rightIconStyle=''] - Inline styles for right icon image
+ * @param {string} [clearIconStyle=''] - Inline styles for clear icon image
+ * @param {string} [leftIconContainerClassName=''] - Additional CSS classes for left icon container div
+ * @param {string} [rightIconContainerClassName=''] - Additional CSS classes for right icon container div
+ * @param {string} [clearIconContainerClassName=''] - Additional CSS classes for clear icon container div
+ */
+
+// Extract props as object with defaults
+const props = {
+    placeholder: locals.placeholder || 'Placeholder',
+    disabled: locals.disabled || false,
+    label: locals.label || '',
+    obligatory: locals.obligatory || false,
+    description: locals.description || '',
+    maxLength: locals.maxLength || 0,
+    leftIcon: locals.leftIcon || '',
+    rightIcon: locals.rightIcon || '',
+    className: locals.className || '',
+    containerClassName: locals.containerClassName || '',
+    inputId: locals.inputId || '',
+    name: locals.name || '',
+    handlers: locals.handlers || {},
+    rightIconHandler: locals.rightIconHandler || '',
+    dataTags: locals.dataTags || {},
+    type: locals.type || 'text',
+    readonly: locals.readonly || false,
+    value: locals.value || '',
+    clearIcon: locals.clearIcon || '',
+    clearIconPosition: locals.clearIconPosition || '',
+    leftIconClassName: locals.leftIconClassName || '',
+    rightIconClassName: locals.rightIconClassName || '',
+    clearIconClassName: locals.clearIconClassName || '',
+    leftIconStyle: locals.leftIconStyle || '',
+    rightIconStyle: locals.rightIconStyle || '',
+    clearIconStyle: locals.clearIconStyle || '',
+    leftIconContainerClassName: locals.leftIconContainerClassName || '',
+    rightIconContainerClassName: locals.rightIconContainerClassName || '',
+    clearIconContainerClassName: locals.clearIconContainerClassName || ''
+};
+
+// Generate data attributes string
+let dataAttributes = '';
+
+// Add custom data tags
+for (const [key, value] of Object.entries(props.dataTags)) {
+    dataAttributes += ` data-${key}="${value}"`;
+}
+
+// Add handler attributes (data-onfocus, data-oninput, data-onblur, etc.)
+for (const [eventType, handlerName] of Object.entries(props.handlers)) {
+    if (handlerName) {
+        dataAttributes += ` data-on${eventType}="${handlerName}"`;
+    }
+}
+
+// Responsive base classes - mobile first, then desktop (lg:)
+// Mobile: 48px height, 12px padding, 8px radius
+// Desktop: 60px height, 16px padding, 16px radius
+// Note: Horizontal padding (px) is applied conditionally based on icon presence
+let baseClasses;
+if (props.disabled) {
+    baseClasses = 'w-full h-[48px] lg:h-[60px] !bg-surface-disabled !border !border-border-disabled rounded-[8px] lg:rounded-[16px] font-header text-[16px] !text-text-disabled !placeholder:text-text-disabled cursor-not-allowed transition-all duration-300 overflow-hidden text-ellipsis whitespace-nowrap';
+} else {
+    baseClasses = 'w-full h-[48px] lg:h-[60px] !bg-surface-background !border !border-border-default rounded-[8px] lg:rounded-[16px] font-header text-[16px] !text-text-secondary focus:!text-text-primary !placeholder:text-text-tertiary focus:outline-none transition-all duration-300 overflow-hidden text-ellipsis whitespace-nowrap';
+}
+
+// Calculate padding based on icon presence (including clear icon)
+// Mobile: icon at 12px (left-3), icon width 24px, gap 8px = 44px total left padding
+// Desktop: icon at 16px (left-4), icon width 24px, gap 8px = 48px total left padding
+let paddingClasses = '';
+const hasLeftIcon = props.leftIcon || (props.clearIcon && props.clearIconPosition === 'left');
+const hasRightIcon = props.rightIcon || (props.clearIcon && props.clearIconPosition === 'right');
+
+if (hasLeftIcon && hasRightIcon) {
+    paddingClasses = '!pl-[44px] !pr-[44px] lg:!pl-[48px] lg:!pr-[48px]';
+} else if (hasLeftIcon) {
+    paddingClasses = '!pl-[44px] !pr-3 lg:!pl-[48px] lg:!pr-4';
+} else if (hasRightIcon) {
+    paddingClasses = '!pl-3 !pr-[44px] lg:!pl-4 lg:!pr-[48px]';
+} else {
+    paddingClasses = '!px-3 lg:!px-4';
+}
+
+// Generate unique IDs for description and counter if needed
+const descriptionId = props.inputId ? `${props.inputId}-description` : '';
+const counterId = props.inputId ? `${props.inputId}-counter` : '';
+%>
+
+<div class="flex flex-col gap-2 w-full <%= props.containerClassName %>">
+    <% if (props.label) { %>
+    <!-- Label -->
+    <label <% if (props.inputId) { %>for="<%= props.inputId %>"<% } %> class="font-body text-[16px] text-[#616975] leading-none flex items-center gap-1">
+        <%= props.label %>
+        <% if (props.obligatory) { %>
+        <svg width="6" height="6" viewBox="0 0 6 6" fill="none" xmlns="http://www.w3.org/2000/svg" class="flex-shrink-0">
+            <path d="M5.21544 1.02414L5.79144 2.06414L3.56744 2.99214L5.80744 3.90414L5.19944 4.97614L3.26344 3.56814L3.51944 5.98414H2.31944L2.55944 3.56814L0.623438 4.99214L-0.000562429 3.90414L2.22344 2.97614L-0.000562429 2.08014L0.591438 1.00814L2.57544 2.43214L2.31944 0.00014019H3.53544L3.26344 2.43214L5.21544 1.02414Z" fill="#CC0000"/>
+        </svg>
+        <% } %>
+    </label>
+    <% } %>
+    
+    <!-- Input Field Container -->
+    <div class="relative w-full <%= props.containerClassName %>">
+        <% if (props.leftIcon) { %>
+        <!-- Left Icon (Original) -->
+        <div class="absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-[24px] h-[24px] pointer-events-none <%= props.leftIconContainerClassName %>" <% if (props.inputId && props.clearIconPosition === 'left') { %>id="<%= props.inputId %>-left-icon-original"<% } %>>
+            <img src="<%= props.leftIcon %>" alt="" class="w-full h-full object-contain <%= props.leftIconClassName %>" <% if (props.leftIconStyle) { %>style="<%= props.leftIconStyle %>"<% } %> />
+        </div>
+        <% } %>
+        
+        <% if (props.clearIcon && props.clearIconPosition === 'left') { %>
+        <!-- Left Clear Icon (Hidden initially, shown when input has value) -->
+        <div class="absolute left-3 lg:left-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-[24px] h-[24px] cursor-pointer hidden <%= props.clearIconContainerClassName %>" id="<%= props.inputId %>-left-icon-clear" data-input-id="<%= props.inputId %>">
+            <img src="<%= props.clearIcon %>" alt="" class="w-full h-full object-contain pointer-events-none <%= props.clearIconClassName %>" <% if (props.clearIconStyle) { %>style="<%= props.clearIconStyle %>"<% } %> />
+        </div>
+        <% } %>
+        
+        <!-- Input Field -->
+        <input 
+            type="<%= props.type %>" 
+            <% if (props.inputId) { %>id="<%= props.inputId %>"<% } %>
+            <% if (props.name) { %>name="<%= props.name %>"<% } %>
+            placeholder="<%= props.placeholder %>"
+            <% if (props.value) { %>value="<%= props.value %>"<% } %>
+            <% if (props.maxLength > 0) { %>maxlength="<%= props.maxLength %>"<% } %>
+            class="<%= baseClasses %> <%= paddingClasses %> <%= props.className %>"
+            <%= props.disabled ? 'disabled' : '' %>
+            <%= props.readonly ? 'readonly' : '' %>
+            <%- dataAttributes %>
+        />
+        
+        <% if (props.rightIcon) { %>
+        <!-- Right Icon (Original) -->
+        <div class="absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-[24px] h-[24px] <%= props.rightIconHandler ? 'cursor-pointer' : 'pointer-events-none' %> <%= props.rightIconContainerClassName %>" <% if (props.rightIconHandler) { %>data-onclick="<%= props.rightIconHandler %>"<% } %> <% if (props.inputId) { %>data-input-id="<%= props.inputId %>"<% } %> <% if (props.inputId && props.clearIconPosition === 'right') { %>id="<%= props.inputId %>-right-icon-original"<% } %>>
+            <img src="<%= props.rightIcon %>" alt="" class="w-full h-full object-contain pointer-events-none <%= props.rightIconClassName %>" <% if (props.rightIconStyle) { %>style="<%= props.rightIconStyle %>"<% } %> />
+        </div>
+        <% } %>
+        
+        <% if (props.clearIcon && props.clearIconPosition === 'right') { %>
+        <!-- Right Clear Icon (Hidden initially, shown when input has value) -->
+        <div class="absolute right-3 lg:right-4 top-1/2 -translate-y-1/2 flex items-center justify-center w-[24px] h-[24px] cursor-pointer hidden <%= props.clearIconContainerClassName %>" id="<%= props.inputId %>-right-icon-clear" data-input-id="<%= props.inputId %>">
+            <img src="<%= props.clearIcon %>" alt="" class="w-full h-full object-contain pointer-events-none <%= props.clearIconClassName %>" <% if (props.clearIconStyle) { %>style="<%= props.clearIconStyle %>"<% } %> />
+        </div>
+        <% } %>
+    </div>
+    
+    <% if (props.description || props.maxLength > 0) { %>
+    <!-- Bottom section: Description and Counter -->
+    <div class="flex items-start gap-1 w-full <%= props.containerClassName %>">
+        <% if (props.description) { %>
+        <p <% if (descriptionId) { %>id="<%= descriptionId %>"<% } %> class="font-body text-[12px] text-[#8c94a3] leading-[1.4] flex-1">
+            <%= props.description %>
+        </p>
+        <% } %>
+        
+        <% if (props.maxLength > 0) { %>
+        <p <% if (counterId) { %>id="<%= counterId %>"<% } %> class="font-body text-[12px] text-[#8c94a3] leading-[1.4] whitespace-nowrap flex-shrink-0 <%= !props.description ? 'ml-auto' : '' %>">
+            0/<%= props.maxLength %>
+        </p>
+        <% } %>
+    </div>
+    <% } %>
+</div>
+
+<% if (props.inputId) { %>
+<script>
+(function() {
+    const input = document.getElementById('<%= props.inputId %>');
+    if (!input) return;
+    
+    const isDisabled = <%= props.disabled ? 'true' : 'false' %>;
+    const descId = '<%= descriptionId %>';
+    const countId = '<%= counterId %>';
+    const maxLen = <%= props.maxLength %>;
+    const hasClearIcon = <%= props.clearIcon ? 'true' : 'false' %>;
+    const clearIconPosition = '<%= props.clearIconPosition %>';
+    
+    // ============================================
+    // VERTICAL CENTERING (for all inputs)
+    // ============================================
+    function updateLineHeight() {
+        input.style.lineHeight = input.offsetHeight + 'px';
+        input.style.paddingTop = '0';
+        input.style.paddingBottom = '0';
+    }
+    
+    // Set initial line-height
+    updateLineHeight();
+    window.addEventListener('resize', updateLineHeight);
+    
+    // ============================================
+    // DYNAMIC ICON SWITCHING (Clear Icon Feature)
+    // ============================================
+    if (hasClearIcon && clearIconPosition && !isDisabled) {
+        const originalIcon = document.getElementById('<%= props.inputId %>-' + clearIconPosition + '-icon-original');
+        const clearIcon = document.getElementById('<%= props.inputId %>-' + clearIconPosition + '-icon-clear');
+        
+        if (clearIcon) {
+            // Function to toggle icons based on input value
+            function toggleIcons() {
+                const hasValue = input.value.trim().length > 0;
+                
+                if (hasValue) {
+                    // Show clear icon, hide original
+                    clearIcon.classList.remove('hidden');
+                    if (originalIcon) {
+                        originalIcon.classList.add('hidden');
+                    }
+                } else {
+                    // Hide clear icon, show original
+                    clearIcon.classList.add('hidden');
+                    if (originalIcon) {
+                        originalIcon.classList.remove('hidden');
+                    }
+                }
+            }
+            
+            // Clear input when clear icon is clicked
+            clearIcon.addEventListener('click', function(e) {
+                e.stopPropagation();
+                input.value = '';
+                toggleIcons();
+                
+                // Trigger input event to update any counters or validators
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+                
+                // Update component if it exists
+                if (input._component && input._component.updateCounter) {
+                    input._component.updateCounter();
+                }
+                
+                // Focus back on input after clearing
+                input.focus();
+            });
+            
+            // Listen to input changes
+            input.addEventListener('input', toggleIcons);
+            
+            // Set initial state
+            toggleIcons();
+        }
+    }
+    
+    // ============================================
+    // COMPONENT STATE MANAGER (only for enabled inputs)
+    // ============================================
+    if (!isDisabled) {
+        let currentStatus = 'default';  // Track current validation status (default/error/success)
+        let isCurrentlyFocused = false;  // Track focus state
+        
+        const InputComponent = {
+            /**
+             * Update visual status of this input
+             * @param {string} status - 'default' | 'error' | 'success'
+             * @param {boolean} isFocused - whether input is currently focused (optional)
+             */
+            setStatus: function(status, isFocused) {
+                currentStatus = status;
+                if (isFocused !== undefined) {
+                    isCurrentlyFocused = isFocused;
+                }
+                
+                // Remove all status classes
+                input.classList.remove('!border', '!border-2');
+                input.classList.remove('!border-border-default', '!border-brand-green_dark-400', '!border-border-error', '!border-border-success');
+                
+                // Apply border width: 1px idle, 2px focus
+                const borderWidth = isCurrentlyFocused ? '!border-2' : '!border';
+                
+                // Apply status-specific classes
+                if (status === 'error') {
+                    input.classList.add(borderWidth, '!border-border-error');
+                } else if (status === 'success') {
+                    input.classList.add(borderWidth, '!border-border-success');
+                } else {
+                    // default status
+                    if (isCurrentlyFocused) {
+                        input.classList.add(borderWidth, '!border-brand-green_dark-400');
+                    } else {
+                        input.classList.add(borderWidth, '!border-border-default');
+                    }
+                }
+                
+                // Update description color if exists
+                if (descId) {
+                    const descriptionElem = document.getElementById(descId);
+                    if (descriptionElem) {
+                        descriptionElem.classList.remove('!text-[#8c94a3]', '!text-text-error', '!text-text-success');
+                        if (status === 'error') {
+                            descriptionElem.classList.add('!text-text-error');
+                        } else if (status === 'success') {
+                            descriptionElem.classList.add('!text-text-success');
+                        } else {
+                            descriptionElem.classList.add('!text-[#8c94a3]');
+                        }
+                    }
+                }
+            },
+            
+            /**
+             * Update character counter
+             */
+            updateCounter: function() {
+                if (countId && maxLen > 0) {
+                    const counterElem = document.getElementById(countId);
+                    if (counterElem) {
+                        counterElem.textContent = input.value.length + '/' + maxLen;
+                    }
+                }
+            },
+            
+            /**
+             * Update line-height for vertical centering
+             */
+            updateLineHeight: updateLineHeight
+        };
+        
+        // Set initial status
+        InputComponent.setStatus('default', false);
+        
+        // ============================================
+        // BUILT-IN FOCUS/BLUR HANDLERS
+        // ============================================
+        // Automatically handle focus/blur to show default focus state
+        // If custom handlers call setStatus, they will override this behavior
+        input.addEventListener('focus', function() {
+            isCurrentlyFocused = true;
+            // Only apply default focus state if no handler has changed status
+            InputComponent.setStatus(currentStatus, true);
+        });
+        
+        input.addEventListener('blur', function() {
+            isCurrentlyFocused = false;
+            // Only apply default idle state if no handler has changed status
+            InputComponent.setStatus(currentStatus, false);
+        });
+        
+        // Expose component methods globally for external access
+        input._component = InputComponent;
+    }
+})();
+</script>
+<% } %>
+
+

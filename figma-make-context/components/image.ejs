@@ -1,0 +1,70 @@
+<%
+if (!imageAssets) {  // TODO: remove this before deployment
+  return;
+}
+
+// Component parameters
+const originalAsset = imageAssets.original;
+const webpAsset = imageAssets.webp;
+const minimizedWebpAsset = imageAssets?.minimizedWebp;
+const hasBlur = !!minimizedWebpAsset;
+const disableLazyLoading = typeof noLazyLoad !== 'undefined' ? noLazyLoad : false;
+const fetchPriority = typeof priority !== 'undefined' ? priority : null; // 'high', 'low', or null
+const altText = originalAsset?.assetAlt || '';
+const finalImageClasses = typeof imageClasses !== 'undefined' ? imageClasses : 'w-full h-auto block';
+const finalWrapperClasses = typeof wrapperClasses !== 'undefined' ? wrapperClasses : 'h-full w-full';
+const finalPictureClasses = typeof pictureClasses !== 'undefined' ? pictureClasses : 'h-full w-full block';
+const additionalTransitions = typeof transitions !== 'undefined' ? transitions : '';
+const uniqueId = 'img-' + Math.random().toString(36).substr(2, 9);
+
+// Build transition CSS - always include opacity, add additional if provided
+const transitionParts = ['opacity 400ms ease-in-out'];
+if (additionalTransitions) {
+  if (Array.isArray(additionalTransitions)) {
+    transitionParts.push(...additionalTransitions);
+  } else {
+    transitionParts.push(additionalTransitions);
+  }
+}
+const transitionStyle = transitionParts.join(', ');
+%>
+
+<div 
+  id="<%= uniqueId %>" 
+  class="<%= finalWrapperClasses %> <%= hasBlur ? 'blurred-img' : '' %>"
+  <% if (hasBlur && minimizedWebpAsset) { %>style="background-image: url('<%= minimizedWebpAsset.assetUri %>');"<% } %>>
+  <picture class="<%= finalPictureClasses %>">
+    <% if (webpAsset) { %>
+    <source srcset="<%= webpAsset.assetUri %>" type="image/webp">
+    <% } %>
+    <img 
+      <% if (originalAsset) { %>src="<%= originalAsset.assetUri %>"<% } %>
+      alt="<%= altText %>"
+      class="<%= finalImageClasses %>"
+      style="transition: <%= transitionStyle %>;"
+      <% if (!disableLazyLoading) { %>loading="lazy"<% } %>
+      <% if (fetchPriority) { %>fetchpriority="<%= fetchPriority %>"<% } %>
+      decoding="async">
+  </picture>
+</div>
+
+<% if (hasBlur && originalAsset) { %>
+<script>
+(function() {
+  const container = document.getElementById('<%= uniqueId %>');
+  const img = container.querySelector('img');
+  
+  if (!img) return;
+  
+  function loaded() {
+    container.classList.add('loaded');
+  }
+  
+  if (img.complete) {
+    loaded();
+  } else {
+    img.addEventListener('load', loaded);
+  }
+})();
+</script>
+<% } %>

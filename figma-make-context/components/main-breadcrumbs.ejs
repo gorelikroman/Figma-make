@@ -1,0 +1,80 @@
+<%
+/**
+ * Main Breadcrumbs Component
+ * 
+ * Supports two formats:
+ * 1. Simple: items = ['Home', 'Category', 'Product']
+ * 2. Full: items = [{ title: 'Home', uri: '/home' }, { title: 'Product', uri: null }]
+ * 
+ * @param {string[]|object[]} items - Array of breadcrumb items (strings or objects with title, uri, breadcrumbs_title)
+ * @param {string} [mainPath=''] - Base path prefix for URLs (e.g., '/en' or '/fr')
+ * @param {string} [className=''] - Additional CSS classes to override defaults
+ * @param {object} [dataTags={}] - Data attributes to add to the container
+ */
+
+// Extract props as object with defaults
+const props = {
+    items: locals.items || [],
+    mainPath: locals.mainPath || '',
+    className: locals.className || '',
+    dataTags: locals.dataTags || {}
+};
+
+// Generate data attributes string
+let dataAttributes = '';
+for (const [key, value] of Object.entries(props.dataTags)) {
+    dataAttributes += ` data-${key}="${value}"`;
+}
+
+// Helper function to normalize items (convert strings to objects)
+function normalizeItem(item, index) {
+    if (typeof item === 'string') {
+        return { title: item, uri: null };
+    }
+    return {
+        title: item.title || '',
+        uri: item.uri || null,
+        breadcrumbs_title: item.breadcrumbs_title || null
+    };
+}
+
+// Base classes - mobile first, responsive
+// Match Figma: gap-[8px] between item groups, font-body, text-[14px], leading-[21px]
+const baseClasses = 'flex flex-wrap gap-2 items-center font-body text-[14px] leading-[21px] whitespace-nowrap';
+%>
+
+<div class="<%= baseClasses %> <%= props.className %>"<%- dataAttributes %>>
+    <% if (props.items.length === 0) { %>
+        <!-- Empty state -->
+    <% } else { %>
+        <% props.items.forEach((item, index) => { %>
+            <% 
+            const normalizedItem = normalizeItem(item, index);
+            const isLast = index === props.items.length - 1;
+            // Last item should never be a link, even if it has a uri
+            const shouldBeLink = !isLast && normalizedItem.uri;
+            %>
+            
+            <% if (isLast) { %>
+                <!-- Last item (no separator, no link) -->
+                <span class="text-text-link leading-[21px] shrink-0"><%- normalizedItem.title %></span>
+            <% } else { %>
+                <!-- Breadcrumb Item Group (item + separator) -->
+                <div class="flex items-center shrink-0">
+                    <% if (shouldBeLink) { %>
+                        <!-- Clickable link -->
+                        <a href="<%= props.mainPath + normalizedItem.uri %>" 
+                           <% if (normalizedItem.breadcrumbs_title) { %>title="<%= normalizedItem.breadcrumbs_title %>"<% } %>
+                           class="text-text-tertiary leading-[21px] hover:text-text-link transition-colors duration-200">
+                            <%- normalizedItem.title %>
+                        </a>
+                    <% } else { %>
+                        <!-- Non-clickable text -->
+                        <span class="text-text-tertiary leading-[21px]"><%- normalizedItem.title %></span>
+                    <% } %>
+                    <span class="text-text-disabled leading-[21px] ml-2">/</span>
+                </div>
+            <% } %>
+        <% }); %>
+    <% } %>
+</div>
