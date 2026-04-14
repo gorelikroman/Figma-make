@@ -34,7 +34,7 @@ React + TypeScript design system: 11 components, 1400+ design tokens, 48 text st
 - `.github/copilot-instructions.md` — Global design system constraints
 - `.github/instructions/ui-forms.instructions.md` — Form-specific rules
 - `.github/prompts/generate-form.prompt.md` — Prompt for form generation
-- `guidelines/examples/*.md` — Individual rule cards (16 rules)
+- `guidelines/rules/*.md` — Individual rule cards (16 rules)
 
 ---
 
@@ -75,7 +75,7 @@ src/
 │   ├── fonts.css                    # Font imports
 │   └── theme.css                    # Base styles
 docs/                                # Human + AI-readable documentation
-guidelines/examples/                 # AI form rule cards
+guidelines/rules/                    # AI form rule cards
 figma-make-context/                  # EJS templates + Tailwind config (Figma Make only)
 .github/                             # AI agent instructions
 ```
