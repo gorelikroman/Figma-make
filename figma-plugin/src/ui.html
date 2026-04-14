@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 12px;
+    color: #333;
+    background: #fff;
+  }
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  .header h1 {
+    font-size: 14px; font-weight: 600;
+  }
+  .btn {
+    padding: 6px 14px; border-radius: 6px; border: none;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+  }
+  .btn-primary {
+    background: linear-gradient(135deg, #00734a, #7aba47);
+    color: #fff;
+  }
+  .btn-primary:hover { opacity: 0.9; }
+
+  .summary {
+    display: flex; gap: 8px; padding: 12px 16px;
+    border-bottom: 1px solid #e5e5e5;
+  }
+  .badge {
+    padding: 4px 10px; border-radius: 12px;
+    font-size: 11px; font-weight: 600;
+  }
+  .badge-error { background: #fee2d9; color: #c85535; }
+  .badge-warning { background: #ffedd2; color: #b06900; }
+  .badge-pass { background: #c7e8d9; color: #005730; }
+
+  .filter-bar {
+    display: flex; gap: 4px; padding: 8px 16px;
+    flex-wrap: wrap; border-bottom: 1px solid #e5e5e5;
+  }
+  .filter-chip {
+    padding: 4px 10px; border-radius: 12px; border: 1px solid #d1d6e3;
+    font-size: 11px; cursor: pointer; background: #fff; color: #545963;
+  }
+  .filter-chip.active {
+    background: #1f2129; color: #fff; border-color: #1f2129;
+  }
+
+  .results {
+    overflow-y: auto; max-height: 360px; padding: 8px 0;
+  }
+  .violation {
+    display: flex; align-items: flex-start; gap: 8px;
+    padding: 8px 16px; cursor: pointer; transition: background 0.1s;
+  }
+  .violation:hover { background: #f5f6f7; }
+  .violation .icon {
+    width: 16px; height: 16px; border-radius: 50%;
+    flex-shrink: 0; margin-top: 2px;
+  }
+  .icon-error { background: #c85535; }
+  .icon-warning { background: #f08e00; }
+  .violation .detail { flex: 1; }
+  .violation .node-name {
+    font-weight: 600; font-size: 12px; color: #1f2129;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    max-width: 260px;
+  }
+  .violation .msg {
+    color: #616975; font-size: 11px; line-height: 1.4; margin-top: 2px;
+  }
+  .violation .cat {
+    font-size: 10px; color: #8c94a3; text-transform: uppercase;
+    letter-spacing: 0.5px; margin-top: 2px;
+  }
+  .empty {
+    text-align: center; padding: 48px 16px; color: #8c94a3;
+  }
+  .empty .check { font-size: 32px; margin-bottom: 8px; }
+</style>
+</head>
+<body>
+  <div class="header">
+    <h1>DoktorABC Design Lint</h1>
+    <button class="btn btn-primary" id="run">Re-scan</button>
+  </div>
+  <div class="summary" id="summary"></div>
+  <div class="filter-bar" id="filters"></div>
+  <div class="results" id="results"></div>
+
+  <!-- SCRIPT -->
+</body>
+</html>
