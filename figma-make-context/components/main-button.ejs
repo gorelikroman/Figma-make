@@ -1,0 +1,657 @@
+<%
+/**
+ * Main Button Component
+ * 
+ * @param {string} [text=''] - Button text
+ * @param {string} [style='solid'] - 'solid' | 'outline' | 'ghost' | 'icon'
+ * @param {string} [color='primary'] - 'primary' | 'neutral-dark' | 'neutral-medium' | 'neutral-light' | 'error' | 'warning'
+ * @param {boolean} [disabled=false] - Whether the button is disabled
+ * @param {boolean} [loading=false] - Whether the button is in loading state
+ * @param {string} [icon=''] - SVG path or icon name (optional)
+ * @param {string} [iconPosition='left'] - 'left' | 'right' | 'only' (only used if icon is provided)
+ * @param {string} [className=''] - Additional CSS classes to override defaults
+ * @param {string} [id=''] - ID for the button element
+ * @param {object} [handlers={}] - Event handlers (e.g., { click: 'handleButtonClick' })
+ * @param {object} [dataTags={}] - Data attributes to add to the button
+ * 
+ * TAILWIND JIT: Dynamic hover classes used by this component
+ * (Tailwind scans comments to detect classes for JIT compilation)
+ * 
+ * hover:bg-surface-secondary hover:bg-brand-green_light-50 hover:bg-alias-neutral-400
+ * hover:bg-alias-neutral-200 hover:bg-alias-neutral-o0_20 hover:bg-surface-error
+ * hover:bg-surface-error_focus hover:bg-alias-error-50 hover:bg-surface-warning
+ * hover:bg-surface-warning_focus hover:bg-brand-orange-100 hover:bg-surface-info
+ * hover:bg-surface-info_focus hover:bg-alias-info-100 hover:!border-[0px]
+ * 
+ * hover:[box-shadow:inset_0px_0px_35px_0px_var(--alias-secondary-100)]
+ * hover:[box-shadow:inset_0px_0px_35px_0px_var(--alias-error-400)]
+ * hover:[box-shadow:inset_0px_0px_35px_0px_var(--mapped-surface-warning)]
+ * hover:[box-shadow:inset_0px_0px_35px_0px_var(--alias-info-300)]
+ * 
+ * border-text-success border-text-primary border-text-tertiary
+ * border-text-error border-text-warning border-text-info
+ */
+
+// Extract props as object with defaults
+const props = {
+    text: locals.text || '',
+    id: locals.id || '',
+    style: locals.style || 'solid',
+    color: locals.color || 'primary',
+    disabled: locals.disabled || false,
+    loading: locals.loading || false,
+    icon: locals.icon || '',
+    iconPosition: locals.iconPosition || 'left',
+    className: locals.className || '',
+    handlers: locals.handlers || {},
+    dataTags: locals.dataTags || {}
+};
+
+// Default size config (medium) - can be overridden via class prop
+const buttonSize = 'medium';
+
+// Size configurations
+// Mobile-first: mobile values are default, desktop values use lg: prefix
+const sizeConfig = {
+  small: {
+    paddingH: 'px-3 lg:px-3', // 12px mobile and desktop
+    paddingV: 'py-[10px] lg:py-[10px]', // 20px total mobile and desktop
+    fontSize: 'text-base lg:text-base', // 16px mobile and desktop
+    borderRadius: 'rounded-[8px] lg:rounded-[8px]', // 8px mobile and desktop
+  },
+  medium: {
+    paddingH: 'px-[18px] lg:px-8', // 18px mobile, 32px desktop
+    paddingV: 'py-[17px] lg:py-5', // 17px mobile, 20px desktop
+    fontSize: 'text-[14px] lg:text-[22px]', // 14px mobile, 22px desktop
+    borderRadius: 'rounded-[8px] lg:rounded-[16px]', // 8px mobile, 16px desktop
+  },
+  large: {
+    paddingH: 'px-[18px] lg:px-6', // 18px mobile, 24px desktop
+    paddingV: 'py-[17px] lg:py-[20px]', // 17px mobile, 40px desktop
+    fontSize: 'text-[14px] lg:text-2xl', // 14px mobile, 24px desktop
+    borderRadius: 'rounded-[8px] lg:rounded-[16px]', // 8px mobile, 16px desktop
+  },
+  'full-width': {
+    paddingH: 'px-[18px] lg:px-8', // 18px mobile, 32px desktop
+    paddingV: 'py-[17px] lg:py-5', // 17px mobile, 20px desktop
+    fontSize: 'text-[14px] lg:text-[22px]', // 14px mobile, 22px desktop
+    borderRadius: 'rounded-[8px] lg:rounded-[16px]', // 8px mobile, 16px desktop
+  }
+};
+
+const currentSize = sizeConfig[buttonSize] || sizeConfig.medium;
+
+// Color configurations for each style
+const colorConfig = {
+  primary: {
+    solid: {
+      idle: {
+        background: 'bg-primary-green-gradient',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-secondary',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-secondary-100)]'
+      },
+      disabled: {
+        background: 'bg-surface-disabled',
+        textColor: 'text-text-on_disabled',
+        border: '',
+        shadow: ''
+      }
+    },
+    outline: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-success',
+        border: 'border border-text-success',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-secondary',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-secondary-100)]'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: 'border border-border-disabled',
+        shadow: ''
+      }
+    },
+    ghost: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-success',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      focus: {
+        background: 'bg-brand-green_light-50',
+        textColor: 'text-text-success',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      }
+    }
+  },
+  'neutral-dark': {
+    solid: {
+      idle: {
+        background: 'bg-surface-background_dark',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-secondary',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-secondary-100)]'
+      },
+      disabled: {
+        background: 'bg-surface-disabled',
+        textColor: 'text-text-on_disabled',
+        border: '',
+        shadow: ''
+      }
+    },
+    outline: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-primary',
+        border: 'border border-text-primary',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-secondary',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-secondary-100)]'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: 'border border-border-disabled',
+        shadow: ''
+      }
+    },
+    ghost: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-primary',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      focus: {
+        background: 'bg-alias-neutral-400',
+        textColor: 'text-text-primary',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      }
+    }
+  },
+  'neutral-medium': {
+    solid: {
+      idle: {
+        background: 'bg-surface-card',
+        textColor: 'text-text-primary',
+        border: 'border border-border-white',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-secondary',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-secondary-100)]'
+      },
+      disabled: {
+        background: 'bg-surface-disabled',
+        textColor: 'text-text-on_disabled',
+        border: '',
+        shadow: ''
+      }
+    },
+    outline: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-tertiary',
+        border: 'border border-text-tertiary',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-secondary',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-secondary-100)]'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: 'border border-border-disabled',
+        shadow: ''
+      }
+    },
+    ghost: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-primary',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      focus: {
+        background: 'bg-alias-neutral-200',
+        textColor: 'text-text-tertiary',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      }
+    }
+  },
+  'neutral-light': {
+    solid: {
+      idle: {
+        background: 'bg-surface-background',
+        textColor: 'text-text-primary',
+        border: '',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-secondary',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-secondary-100)]'
+      },
+      disabled: {
+        background: 'bg-surface-disabled',
+        textColor: 'text-text-on_disabled',
+        border: '',
+        shadow: ''
+      }
+    },
+    outline: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-primary',
+        border: 'border border-text-primary',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-secondary',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-secondary-100)]'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: 'border border-border-disabled',
+        shadow: ''
+      }
+    },
+    ghost: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      focus: {
+        background: 'bg-alias-neutral-o0_20',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      }
+    }
+  },
+  error: {
+    solid: {
+      idle: {
+        background: 'bg-surface-error',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-error_focus',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-error-400)]'
+      },
+      disabled: {
+        background: 'bg-surface-disabled',
+        textColor: 'text-text-on_disabled',
+        border: '',
+        shadow: ''
+      }
+    },
+    outline: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-error',
+        border: 'border border-text-error',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-error_focus',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-error-400)]'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: 'border border-border-disabled',
+        shadow: ''
+      }
+    },
+    ghost: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-error',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      focus: {
+        background: 'bg-alias-error-50',
+        textColor: 'text-text-error',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      }
+    }
+  },
+  warning: {
+    solid: {
+      idle: {
+        background: 'bg-surface-warning',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-warning_focus',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--mapped-surface-warning)]'
+      },
+      disabled: {
+        background: 'bg-surface-disabled',
+        textColor: 'text-text-on_disabled',
+        border: '',
+        shadow: ''
+      }
+    },
+    outline: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-warning',
+        border: 'border border-text-warning',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-warning_focus',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--mapped-surface-warning)]'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: 'border border-border-disabled',
+        shadow: ''
+      }
+    },
+    ghost: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-warning',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      focus: {
+        background: 'bg-brand-orange-100',
+        textColor: 'text-text-warning',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      }
+    }
+  },
+  info: {
+    solid: {
+      idle: {
+        background: 'bg-surface-info',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-info_focus',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-info-300)]'
+      },
+      disabled: {
+        background: 'bg-surface-disabled',
+        textColor: 'text-text-on_disabled',
+        border: '',
+        shadow: ''
+      }
+    },
+    outline: {
+      idle: {
+        background: 'bg-transparent',
+        textColor: 'text-text-info',
+        border: 'border border-text-info',
+        shadow: ''
+      },
+      focus: {
+        background: 'bg-surface-info_focus',
+        textColor: 'text-text-on_primary',
+        border: '',
+        shadow: '[box-shadow:inset_0px_0px_35px_0px_var(--alias-info-300)]'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: 'border border-border-disabled',
+        shadow: ''
+      }
+    },
+    ghost: {
+      idle: {
+        background: '',
+        textColor: 'text-text-info',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      focus: {
+        background: 'bg-alias-info-100',
+        textColor: 'text-text-info',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      },
+      disabled: {
+        background: 'bg-transparent',
+        textColor: 'text-text-disabled',
+        border: '',
+        shadow: '',
+        underline: 'underline'
+      }
+    }
+  }
+};
+
+// Get current color/style configuration
+const currentConfig = colorConfig[props.color] && colorConfig[props.color][props.style] 
+  ? colorConfig[props.color][props.style] 
+  : colorConfig.primary.solid;
+
+const idleState = currentConfig.idle;
+const focusState = currentConfig.focus;
+const disabledState = currentConfig.disabled;
+
+// Determine if we need overlay for gradient transitions
+const needsOverlay = !props.disabled && idleState.background && idleState.background.includes('gradient') && focusState.background;
+let overlayBgColor = '';
+if (needsOverlay) {
+  // Extract color from Tailwind class or hex value
+  if (focusState.background.includes('secondary') || focusState.background.includes('surface-secondary')) {
+    overlayBgColor = '#61a333'; // secondary-500 / surface-secondary value
+  } else if (focusState.background.includes('error-500')) {
+    overlayBgColor = '#cc0000'; // error-500 value
+  } else if (focusState.background.includes('error-400')) {
+    overlayBgColor = '#e36959'; // error-400 value
+  } else if (focusState.background.includes('warning-500')) {
+    overlayBgColor = '#f08e00'; // warning-500 value
+  } else if (focusState.background.includes('info-500')) {
+    overlayBgColor = '#257db0'; // info-500 value
+  } else {
+    // Fallback: try to extract hex value
+    const colorMatch = focusState.background.match(/#[0-9A-Fa-f]{6}/i);
+    if (colorMatch) {
+      overlayBgColor = colorMatch[0];
+    }
+  }
+}
+
+// Build base classes
+let baseClasses = `font-header flex items-center justify-center font-medium transition-all duration-300 ${currentSize.borderRadius}`;
+// Add faster border transition via style attribute if border changes on hover
+let borderTransitionStyle = '';
+if (!props.disabled && idleState.border && !focusState.border) {
+  borderTransitionStyle = 'transition: border-width 100ms ease-in-out, background-color 300ms ease-in-out, color 300ms ease-in-out, box-shadow 300ms ease-in-out;';
+}
+baseClasses += ` ${currentSize.fontSize}`;
+baseClasses += ' leading-none';
+baseClasses += ` ${currentSize.paddingH} ${currentSize.paddingV}`;
+
+// Width/Height removed - use Tailwind classes via class prop
+
+// State classes - put text color last for higher specificity
+let stateClasses = '';
+if (props.disabled) {
+  stateClasses = `${disabledState.background} ${disabledState.border} ${disabledState.shadow} ${disabledState.textColor} cursor-not-allowed`;
+} else {
+  stateClasses = `${idleState.background} ${idleState.border} ${idleState.shadow} ${idleState.textColor}`;
+  
+  // Add hover/focus classes
+  if (focusState.background && !needsOverlay) {
+    stateClasses += ` hover:${focusState.background}`;
+  }
+  if (focusState.border) {
+    stateClasses += ` hover:${focusState.border}`;
+  } else if (idleState.border) {
+    // If focus border is empty but idle has border, remove it on hover
+    stateClasses += ' hover:!border-[0px]';
+  }
+  if (focusState.shadow) {
+    stateClasses += ` hover:${focusState.shadow}`;
+  }
+  // Note: text color is handled via group-hover on the inner span, not here
+  
+  // Add group class for overlay and text color transitions
+  if (needsOverlay || (focusState.textColor && focusState.textColor !== idleState.textColor)) {
+    baseClasses += ' group';
+  }
+}
+
+// Underline for ghost style is applied to the text span, not the button
+
+// Combine all classes - props.className appended at end to override defaults
+let allClasses = `${baseClasses} ${stateClasses} relative overflow-hidden ${props.className}`.trim().replace(/\s+/g, ' ');
+%>
+<%
+// Generate data attributes string
+let dataAttributes = '';
+
+// Add custom data tags
+for (const [key, value] of Object.entries(props.dataTags)) {
+    dataAttributes += ` data-${key}="${value}"`;
+}
+
+// Add handler attributes (data-onclick, etc.)
+for (const [eventType, handlerName] of Object.entries(props.handlers)) {
+    if (handlerName) {
+        dataAttributes += ` data-on${eventType}="${handlerName}"`;
+    }
+}
+%>
+<button 
+    <% if (props.id) { %>id="<%= props.id %>"<% } %>
+    class="<%= allClasses %>"
+    <%= props.disabled ? 'disabled' : '' %>
+    <%- dataAttributes %>
+    <% if (needsOverlay && overlayBgColor && !props.disabled) { %>
+    style="--hover-overlay-color: <%= overlayBgColor %>;<% if (borderTransitionStyle) { %> <%= borderTransitionStyle %><% } %>"
+    <% } else if (borderTransitionStyle) { %>
+    style="<%= borderTransitionStyle %>"
+    <% } %>
+>
+    <% if (needsOverlay && overlayBgColor && !props.disabled) { %>
+    <!-- Overlay for smooth gradient to solid transition -->
+    <span class="absolute inset-0 bg-[var(--hover-overlay-color)] opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none <%= currentSize.borderRadius %> <%= focusState.shadow ? focusState.shadow.replace('hover:', '') : '' %>"></span>
+    <% } %>
+    
+    <span class="relative z-10 flex items-center justify-center <%= props.disabled ? disabledState.textColor : idleState.textColor %><% if (!props.disabled && focusState.textColor && focusState.textColor !== idleState.textColor) { %> group-hover:!<%= focusState.textColor %><% } %>">
+        <span class="<%= props.disabled ? disabledState.textColor : idleState.textColor %><% if (!props.disabled && focusState.textColor && focusState.textColor !== idleState.textColor) { %> group-hover:!<%= focusState.textColor %><% } %><% if (props.style === 'ghost' && ((props.disabled && disabledState.underline) || (!props.disabled && idleState.underline))) { %> <%= props.disabled ? disabledState.underline : idleState.underline %><% } %>"><%= props.text %></span>
+    </span>
+</button>

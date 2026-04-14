@@ -1,0 +1,212 @@
+<%
+/**
+ * Accordion Component
+ * 
+ * @param {string} title - Title text displayed in the accordion header
+ * @param {string} text - Content text displayed when accordion is open
+ * @param {boolean} [isOpen=false] - Initial state (open or closed)
+ * @param {string} [className=''] - Additional CSS classes to override defaults
+ * @param {string} [accordionId=''] - ID for the accordion element
+ * @param {object} [handlers={}] - Event handlers (e.g., { click: 'handleAccordionClick' })
+ * @param {object} [dataTags={}] - Data attributes to add to the accordion
+ * @param {string} [titleClassName=''] - Custom CSS classes for title text
+ * @param {string} [textClassName=''] - Custom CSS classes for content text
+ * @param {string} [groupId=''] - Group ID for accordion group behavior (only one open at a time)
+ */
+
+// Extract props as object with defaults
+const props = {
+    title: locals.title || '',
+    text: locals.text || '',
+    isOpen: locals.isOpen || false,
+    className: locals.className || '',
+    accordionId: locals.accordionId || '',
+    handlers: locals.handlers || {},
+    dataTags: locals.dataTags || {},
+    titleClassName: locals.titleClassName || '',
+    textClassName: locals.textClassName || '',
+    groupId: locals.groupId || ''
+};
+
+// Icon paths
+const plusIconPath = '/img_v4/svg/icons/from_figma/temp_plus.png';
+const minusIconPath = '/img_v4/svg/icons/from_figma/temp_minus.svg';
+
+// Generate data attributes string
+let dataAttributes = '';
+
+// Add custom data tags
+for (const [key, value] of Object.entries(props.dataTags)) {
+    dataAttributes += ` data-${key}="${value}"`;
+}
+
+// Add handler attributes (data-onclick, etc.)
+for (const [eventType, handlerName] of Object.entries(props.handlers)) {
+    if (handlerName) {
+        dataAttributes += ` data-on${eventType}="${handlerName}"`;
+    }
+}
+
+// Generate unique ID if not provided
+const uniqueId = props.accordionId || `accordion-${Math.random().toString(36).substr(2, 9)}`;
+const buttonId = `${uniqueId}-button`;
+const contentId = `${uniqueId}-content`;
+const headerId = `${uniqueId}-header`;
+const iconImgId = `${uniqueId}-icon-img`;
+%>
+<div 
+    <% if (uniqueId) { %>id="<%= uniqueId %>"<% } %>
+    class="flex flex-col w-full px-6 py-3 <%= props.className %>"
+    <% if (props.groupId) { %>data-accordion-group="<%= props.groupId %>"<% } %>
+    <%- dataAttributes %>
+>
+    <!-- Header: Title + Icon Button -->
+    <div 
+        id="<%= headerId %>"
+        class="flex items-center justify-between gap-8 lg:gap-6 cursor-pointer"
+    >
+        <p class="flex-1 pr-4 <%= props.titleClassName || 'font-header text-subtitle_xl_medium_mobile lg:text-subtitle_xl_medium_desktop leading-subtitle_xl_medium_mobile lg:leading-subtitle_xl_medium_desktop font-medium text-text-primary' %>">
+            <%= props.title %>
+        </p>
+        <%- include(`${basePath}front_v25/design_kit/components/icon-button`, {
+            icon: props.isOpen ? minusIconPath : plusIconPath,
+            id: buttonId,
+            color: 'neutral',
+            style: 'circular',
+            className: 'p-[10px] lg:p-4 flex-shrink-0 !transition-none hover:transition-[background-color,border-color,box-shadow] hover:duration-300',
+            dataTags: { accordionButton: 'true' },
+            iconImgId: iconImgId
+        }) %>
+    </div>
+    
+    <!-- Content: Text (hidden when closed) -->
+    <div 
+        id="<%= contentId %>"
+        class="grid transition-all duration-300 ease-in-out <%= props.isOpen ? 'grid-rows-[1fr] opacity-100 mt-8' : 'grid-rows-[0fr] opacity-0 mt-0' %>"
+        style="<%= props.isOpen ? '' : 'pointer-events: none;' %>"
+    >
+        <div class="overflow-hidden">
+            <div class="<%= props.textClassName || 'font-body text_m_regular_desktop lg:text_m_regular_desktop leading-text_m_regular_desktop font-normal text-text-primary max-w-[750px] whitespace-pre-wrap' %>">
+                <%- props.text %>
+            </div>
+        </div>
+    </div>
+</div>
+
+<% if (uniqueId) { %>
+<script>
+(function() {
+    const accordion = document.getElementById('<%= uniqueId %>');
+    const header = document.getElementById('<%= headerId %>');
+    const button = document.getElementById('<%= buttonId %>');
+    const content = document.getElementById('<%= contentId %>');
+    const iconImg = document.getElementById('<%= iconImgId %>');
+    if (!accordion || !header || !button || !content || !iconImg) return;
+    
+    // ============================================
+    // COMPONENT STATE MANAGER
+    // ============================================
+    let isOpen = <%= props.isOpen ? 'true' : 'false' %>;
+    
+    const AccordionComponent = {
+        /**
+         * Open the accordion
+         */
+        open: function() {
+            isOpen = true;
+            // Update content visibility with transitions
+            content.classList.remove('grid-rows-[0fr]', 'opacity-0', 'mt-0');
+            content.classList.add('grid-rows-[1fr]', 'opacity-100', 'mt-8');
+            content.style.pointerEvents = '';
+            // Update icon to minus with opacity transition - using unique ID
+            iconImg.style.transition = 'opacity 150ms ease-in-out';
+            iconImg.style.opacity = '0';
+            setTimeout(function() {
+                iconImg.src = '<%= minusIconPath %>';
+                iconImg.style.opacity = '1';
+            }, 150);
+        },
+        
+        /**
+         * Close the accordion
+         * @param {boolean} skipIconAnimation - Skip icon animation (for group close behavior)
+         */
+        close: function(skipIconAnimation) {
+            isOpen = false;
+            // Update content visibility with transitions
+            content.classList.remove('grid-rows-[1fr]', 'opacity-100', 'mt-8');
+            content.classList.add('grid-rows-[0fr]', 'opacity-0', 'mt-0');
+            content.style.pointerEvents = 'none';
+            // Update icon to plus - with or without animation
+            if (skipIconAnimation) {
+                iconImg.src = '<%= plusIconPath %>';
+                iconImg.style.opacity = '1';
+            } else {
+                iconImg.style.transition = 'opacity 150ms ease-in-out';
+                iconImg.style.opacity = '0';
+                setTimeout(function() {
+                    iconImg.src = '<%= plusIconPath %>';
+                    iconImg.style.opacity = '1';
+                }, 150);
+            }
+        },
+        
+        /**
+         * Toggle accordion open/close
+         */
+        toggle: function() {
+            if (isOpen) {
+                this.close();
+            } else {
+                this.open();
+            }
+        },
+        
+        /**
+         * Get current open state
+         * @returns {boolean}
+         */
+        getIsOpen: function() {
+            return isOpen;
+        },
+        
+        /**
+         * Set open state programmatically
+         * @param {boolean} open - Whether accordion should be open
+         */
+        setIsOpen: function(open) {
+            if (open) {
+                this.open();
+            } else {
+                this.close();
+            }
+        }
+    };
+    
+    // Handle header click (entire container)
+    header.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // If part of a group, close all other accordions in the group before opening this one
+        <% if (props.groupId) { %>
+        const groupId = '<%= props.groupId %>';
+        if (!isOpen) {
+            // Find all accordions in the same group
+            const groupAccordions = document.querySelectorAll('[data-accordion-group="' + groupId + '"]');
+            groupAccordions.forEach(function(otherAccordion) {
+                if (otherAccordion.id !== '<%= uniqueId %>' && otherAccordion._component) {
+                    // Pass true to skip icon animation for smoother UX
+                    otherAccordion._component.close(true);
+                }
+            });
+        }
+        <% } %>
+        
+        AccordionComponent.toggle();
+    });
+    
+    // Expose component methods globally for external access
+    accordion._component = AccordionComponent;
+})();
+</script>
+<% } %>

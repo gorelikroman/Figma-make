@@ -1,0 +1,250 @@
+<%
+/**
+ * Main Dropdown Component
+ * 
+ * @param {string} [placeholder='Placeholder'] - Placeholder text when no selection
+ * @param {string} [className=''] - Additional CSS classes to override defaults
+ * @param {object} [dataTags={}] - Data attributes to add to the component
+ * @param {Array<string|Object>} [values=[]] - Dropdown values (array of strings or objects with {value, label, disabled})
+ * @param {string} [dropdownId=''] - ID for the dropdown element
+ * @param {string} [selectedValue=''] - Initially selected value
+ * @param {object} [handlers={}] - Event handlers (e.g., { click: 'handleDropdownClick' })
+ */
+
+// Extract props as object with defaults
+const props = {
+    placeholder: locals.placeholder || 'Placeholder',
+    className: locals.className || '',
+    dataTags: locals.dataTags || {},
+    values: locals.values || [],
+    dropdownId: locals.dropdownId || 'dropdown-' + Math.random().toString(36).substr(2, 9),
+    selectedValue: locals.selectedValue || '',
+    handlers: locals.handlers || {}
+};
+
+// Normalize values to array of objects
+const normalizedValues = props.values.map(item => {
+    if (typeof item === 'string') {
+        return { value: item, label: item, disabled: false };
+    }
+    return {
+        value: item.value || item.label || '',
+        label: item.label || item.value || '',
+        disabled: item.disabled || false
+    };
+});
+
+// Generate data attributes string
+let dataAttributes = '';
+
+// Add custom data tags
+for (const [key, value] of Object.entries(props.dataTags)) {
+    dataAttributes += ` data-${key}="${value}"`;
+}
+
+// Add handler attributes (data-onclick, etc.)
+for (const [eventType, handlerName] of Object.entries(props.handlers)) {
+    if (handlerName) {
+        dataAttributes += ` data-on${eventType}="${handlerName}"`;
+    }
+}
+
+// Generate unique IDs
+const inputId = `${props.dropdownId}-input`;
+const listId = `${props.dropdownId}-list`;
+const iconId = `${props.dropdownId}-icon`;
+%>
+
+<div id="<%= props.dropdownId %>" class="relative w-full lg:w-[316px] <%= props.className %>" <%- dataAttributes %>>
+    <!-- Input Field using main-input component -->
+    <div id="<%= iconId %>" class="dropdown-input-wrapper">
+        <%- include(`${basePath}front_v25/design_kit/components/main-input`, {
+            inputId: inputId,
+            placeholder: props.placeholder,
+            value: '',
+            type: 'text',
+            readonly: true,
+            rightIcon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik01LjI5Mjg5IDkuMjk2MDdDNS42ODM0MiA4LjkwMTMxIDYuMzE2NTggOC45MDEzMSA2LjcwNzExIDkuMjk2MDdMMTIgMTQuNTU5NkwxNy4yOTI5IDkuMjk2MDdDMTcuNjgzNCA4LjkwMTMxIDE4LjMxNjYgOC45MDEzMSAxOC43MDcxIDkuMjk2MDdDMTkuMDk3NiA5LjY5MDgzIDE5LjA5NzYgMTAuMzMwOSAxOC43MDcxIDEwLjcyNTZMMTIuNzA3MSAxNi43MDM5QzEyLjMxNjYgMTcuMDk4NyAxMS42ODM0IDE3LjA5ODcgMTEuMjkyOSAxNi43MDM5TDUuMjkyODkgMTAuNzI1NkM0LjkwMjM3IDEwLjMzMDkgNC45MDIzNyA5LjY5MDgzIDUuMjkyODkgOS4yOTYwN1oiIGZpbGw9ImJsYWNrIi8+Cjwvc3ZnPg==',
+            handlers: {
+                click: 'toggleDropdown'
+            },
+            dataTags: {
+                'dropdown-id': props.dropdownId
+            },
+            className: 'cursor-pointer'
+        }) %>
+    </div>
+    
+    <!-- Dropdown List (initially hidden, absolutely positioned) -->
+    <div id="<%= listId %>" class="absolute top-[calc(100%+4px)] left-0 z-50 !bg-surface-background rounded-[8px] shadow-[0px_2px_6px_0px_rgba(8,8,10,0.1)] overflow-hidden hidden w-full max-h-[300px] overflow-y-auto">
+        <div class="flex flex-col">
+            <% normalizedValues.forEach((item, index) => { %>
+            <div 
+                class="flex items-center px-2 py-3 lg:px-2 lg:py-3 cursor-pointer transition-colors duration-200 hover:!bg-surface-selected <%= item.disabled ? 'opacity-50 cursor-not-allowed' : '' %>"
+                data-onclick="<%= item.disabled ? '' : 'selectDropdownItem' %>"
+                data-dropdown-id="<%= props.dropdownId %>"
+                data-value="<%= item.value %>"
+                data-label="<%= item.label %>"
+            >
+                <p class="font-header text-[16px] !text-text-primary leading-[21px]">
+                    <%= item.label %>
+                </p>
+            </div>
+            <% }); %>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    const dropdown = document.getElementById('<%= props.dropdownId %>');
+    if (!dropdown) return;
+    
+    const input = document.getElementById('<%= inputId %>');
+    const list = document.getElementById('<%= listId %>');
+    const iconWrapper = dropdown.querySelector('.dropdown-input-wrapper');
+    const icon = iconWrapper ? iconWrapper.querySelector('[class*="right"]') : null;
+    
+    // Apply custom scrollbar styling
+    const style = document.createElement('style');
+    style.textContent = `
+        #<%= listId %>::-webkit-scrollbar {
+            width: 4px;
+        }
+        #<%= listId %>::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #<%= listId %>::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #269c6e, #7aba47);
+            border-radius: 3px;
+        }
+        #<%= listId %> {
+            scrollbar-width: thin;
+            scrollbar-color: #269c6e transparent;
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // ============================================
+    // COMPONENT STATE MANAGER
+    // ============================================
+    const DropdownComponent = {
+        isOpen: false,
+        selectedValue: '<%= props.selectedValue %>',
+        
+        /**
+         * Open the dropdown list
+         */
+        open: function() {
+            this.isOpen = true;
+            list.classList.remove('hidden');
+            if (icon) {
+                icon.style.transform = 'translateY(-50%) rotate(180deg)';
+            }
+            input.classList.remove('!border-border-default');
+            input.classList.add('!border-2', '!border-alias-primary-300');
+        },
+        
+        /**
+         * Close the dropdown list
+         */
+        close: function() {
+            this.isOpen = false;
+            list.classList.add('hidden');
+            if (icon) {
+                icon.style.transform = 'translateY(-50%) rotate(0deg)';
+            }
+            input.classList.remove('!border-2', '!border-alias-primary-300');
+            input.classList.add('!border', '!border-border-default');
+        },
+        
+        /**
+         * Toggle dropdown open/close
+         */
+        toggle: function() {
+            if (this.isOpen) {
+                this.close();
+            } else {
+                this.open();
+            }
+        },
+        
+        /**
+         * Select a value
+         * @param {string} value - The value to select
+         * @param {string} label - The label to display
+         */
+        selectValue: function(value, label) {
+            this.selectedValue = value;
+            input.value = label;
+            input.classList.remove('!text-text-tertiary');
+            input.classList.add('!text-text-primary');
+            this.close();
+            
+            // Dispatch change event for external listeners
+            const event = new CustomEvent('dropdownchange', {
+                detail: { value: value, label: label },
+                bubbles: true
+            });
+            dropdown.dispatchEvent(event);
+        },
+        
+        /**
+         * Get current selected value
+         */
+        getValue: function() {
+            return this.selectedValue;
+        },
+        
+        /**
+         * Set value programmatically
+         */
+        setValue: function(value) {
+            const items = list.querySelectorAll('[data-value]');
+            for (const item of items) {
+                if (item.getAttribute('data-value') === value) {
+                    const label = item.getAttribute('data-label');
+                    this.selectValue(value, label);
+                    break;
+                }
+            }
+        }
+    };
+    
+    // Set initial value if provided
+    if (DropdownComponent.selectedValue) {
+        DropdownComponent.setValue(DropdownComponent.selectedValue);
+    }
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+        if (!dropdown.contains(e.target) && DropdownComponent.isOpen) {
+            DropdownComponent.close();
+        }
+    });
+    
+    // Highlight selected item
+    const updateSelectedHighlight = function() {
+        const items = list.querySelectorAll('[data-value]');
+        items.forEach(item => {
+            if (item.getAttribute('data-value') === DropdownComponent.selectedValue) {
+                item.classList.add('!bg-surface-selected');
+            } else {
+                item.classList.remove('!bg-surface-selected');
+            }
+        });
+    };
+    
+    // Update highlight when dropdown opens
+    const originalOpen = DropdownComponent.open;
+    DropdownComponent.open = function() {
+        originalOpen.call(this);
+        updateSelectedHighlight();
+    };
+    
+    // Expose component methods globally for external access
+    dropdown._component = DropdownComponent;
+})();
+</script>
+
+

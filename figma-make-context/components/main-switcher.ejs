@@ -1,0 +1,245 @@
+<%
+/**
+ * Main Switcher Component
+ * 
+ * @param {string} firstValue - First option value and label
+ * @param {string} secondValue - Second option value and label
+ * @param {string} [selectedValue=''] - Currently selected value (firstValue or secondValue)
+ * @param {boolean} [disabled=false] - Whether the switcher is disabled
+ * @param {string} [className=''] - Additional CSS classes to override defaults
+ * @param {string} [switcherId=''] - ID for the switcher element
+ * @param {object} [handlers={}] - Event handlers (e.g., { change: 'handleSwitcherChange' })
+ * @param {object} [dataTags={}] - Data attributes to add to the switcher
+ */
+
+// Extract props as object with defaults
+const props = {
+    firstValue: locals.firstValue || 'Option 1',
+    secondValue: locals.secondValue || 'Option 2',
+    selectedValue: locals.selectedValue || locals.firstValue || '',
+    disabled: locals.disabled || false,
+    className: locals.className || '',
+    switcherId: locals.switcherId || '',
+    handlers: locals.handlers || {},
+    dataTags: locals.dataTags || {}
+};
+
+// Determine initial selected value
+const initialSelected = props.selectedValue || props.firstValue;
+const isFirstSelected = initialSelected === props.firstValue;
+
+// Build initial transform style
+const initialTransform = isFirstSelected 
+    ? 'translateY(-50%)' 
+    : 'translateY(-50%) translateX(calc(100% + 4px))';
+
+// Generate data attributes string
+let dataAttributes = '';
+
+// Add custom data tags
+for (const [key, value] of Object.entries(props.dataTags)) {
+    dataAttributes += ` data-${key}="${value}"`;
+}
+
+// Add handler attributes (data-onchange, etc.)
+for (const [eventType, handlerName] of Object.entries(props.handlers)) {
+    if (handlerName) {
+        dataAttributes += ` data-on${eventType}="${handlerName}"`;
+    }
+}
+
+// Generate unique ID if not provided
+const uniqueId = props.switcherId || `switcher-${Math.random().toString(36).substr(2, 9)}`;
+const trackId = `${uniqueId}-track`;
+const sliderId = `${uniqueId}-slider`;
+const firstOptionId = `${uniqueId}-first`;
+const secondOptionId = `${uniqueId}-second`;
+%>
+
+<div 
+    <% if (uniqueId) { %>id="<%= uniqueId %>"<% } %>
+    class="w-full <%= props.className %>"
+    <%- dataAttributes %>
+>
+    <!-- Switcher Track -->
+    <div 
+        id="<%= trackId %>"
+        class="relative flex items-center bg-surface-card p-1 rounded-[16px] h-[52px] lg:h-[60px] <%= props.disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer' %>"
+    >
+        <!-- Sliding Background -->
+        <div 
+            id="<%= sliderId %>"
+            class="absolute top-1/2 left-1 w-[calc(50%-4px)] h-[52px] lg:h-[60px] bg-primary-green-gradient rounded-[12px] z-[1]"
+            style="transform: <%= initialTransform %>; transition: transform 0.2s cubic-bezier(0.2, 0, 0.1, 1);"
+        ></div>
+        
+        <!-- First Option -->
+        <div 
+            id="<%= firstOptionId %>"
+            class="flex-1 flex items-center justify-center h-[52px] lg:h-[60px] px-0 text-center whitespace-nowrap relative z-[2] select-none transition-all duration-200 <%= isFirstSelected ? 'text-white font-medium' : 'text-text-tertiary font-normal' %> <%= props.disabled ? 'cursor-not-allowed' : 'cursor-pointer' %>"
+        >
+            <%= props.firstValue %>
+        </div>
+        
+        <!-- Second Option -->
+        <div 
+            id="<%= secondOptionId %>"
+            class="flex-1 flex items-center justify-center h-[52px] lg:h-[60px] px-0 text-center whitespace-nowrap relative z-[2] select-none transition-all duration-200 <%= !isFirstSelected ? 'text-white font-medium' : 'text-text-tertiary font-normal' %> <%= props.disabled ? 'cursor-not-allowed' : 'cursor-pointer' %>"
+        >
+            <%= props.secondValue %>
+        </div>
+    </div>
+</div>
+
+<% if (uniqueId && !props.disabled) { %>
+<script>
+(function() {
+    const switcher = document.getElementById('<%= uniqueId %>');
+    const track = document.getElementById('<%= trackId %>');
+    const slider = document.getElementById('<%= sliderId %>');
+    const firstOption = document.getElementById('<%= firstOptionId %>');
+    const secondOption = document.getElementById('<%= secondOptionId %>');
+    
+    if (!switcher || !track || !slider || !firstOption || !secondOption) return;
+    
+    // ============================================
+    // COMPONENT STATE MANAGER
+    // ============================================
+    let selectedValue = '<%= initialSelected %>';
+    const firstValue = '<%= props.firstValue %>';
+    const secondValue = '<%= props.secondValue %>';
+    let isAnimating = false;
+    
+    const SwitcherComponent = {
+        /**
+         * Get current selected value
+         * @returns {string}
+         */
+        getValue: function() {
+            return selectedValue;
+        },
+        
+        /**
+         * Set selected value programmatically
+         * @param {string} value - Value to select (firstValue or secondValue)
+         */
+        setValue: function(value) {
+            if (value !== firstValue && value !== secondValue) {
+                console.warn('Switcher: Invalid value. Must be firstValue or secondValue.');
+                return;
+            }
+            
+            if (selectedValue === value) return; // Already selected
+            
+            selectedValue = value;
+            this._updateUI();
+            this._triggerChangeEvent();
+        },
+        
+        /**
+         * Toggle between first and second value
+         */
+        toggle: function() {
+            const newValue = selectedValue === firstValue ? secondValue : firstValue;
+            this.setValue(newValue);
+        },
+        
+        /**
+         * Update UI to reflect current selected value
+         * @private
+         */
+        _updateUI: function() {
+            const isFirst = selectedValue === firstValue;
+            
+            // Add animating class for scale effect
+            isAnimating = true;
+            track.classList.add('animating');
+            
+            // Update slider position using inline style
+            const translateX = isFirst ? '' : ' translateX(calc(100% + 4px))';
+            slider.style.transform = 'translateY(-50%)' + translateX + ' scale(0.95)';
+            
+            // Update text colors and font weights
+            if (isFirst) {
+                firstOption.classList.remove('text-text-tertiary', 'font-normal');
+                firstOption.classList.add('text-white', 'font-medium');
+                secondOption.classList.remove('text-white', 'font-medium');
+                secondOption.classList.add('text-text-tertiary', 'font-normal');
+            } else {
+                secondOption.classList.remove('text-text-tertiary', 'font-normal');
+                secondOption.classList.add('text-white', 'font-medium');
+                firstOption.classList.remove('text-white', 'font-medium');
+                firstOption.classList.add('text-text-tertiary', 'font-normal');
+            }
+            
+            // Remove scale effect and animating class after animation completes
+            setTimeout(() => {
+                slider.style.transform = 'translateY(-50%)' + translateX;
+                track.classList.remove('animating');
+                isAnimating = false;
+            }, 200);
+        },
+        
+        /**
+         * Trigger change event for handlers
+         * @private
+         */
+        _triggerChangeEvent: function() {
+            // Create and dispatch custom event
+            const changeEvent = new CustomEvent('switcherChange', {
+                detail: {
+                    value: selectedValue,
+                    firstValue: firstValue,
+                    secondValue: secondValue
+                },
+                bubbles: true
+            });
+            switcher.dispatchEvent(changeEvent);
+        }
+    };
+    
+    // Handle clicks on options
+    firstOption.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isAnimating) {
+            SwitcherComponent.setValue(firstValue);
+        }
+    });
+    
+    secondOption.addEventListener('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!isAnimating) {
+            SwitcherComponent.setValue(secondValue);
+        }
+    });
+    
+    // Handle track click (for accessibility)
+    track.addEventListener('click', function(e) {
+        if (e.target === track) {
+            SwitcherComponent.toggle();
+        }
+    });
+    
+    // Initialize slider position
+    const isFirst = selectedValue === firstValue;
+    const translateX = isFirst ? '' : ' translateX(calc(100% + 4px))';
+    slider.style.transform = 'translateY(-50%)' + translateX;
+    
+    // Expose component methods globally for external access
+    switcher._component = SwitcherComponent;
+    
+    // Listen for change events and call registered handlers
+    switcher.addEventListener('switcherChange', function(e) {
+        // The General script will handle routing to registered handlers via data-onchange
+        // But we also trigger a standard change event for compatibility
+        const changeEvent = new Event('change', { bubbles: true });
+        switcher.dispatchEvent(changeEvent);
+    });
+})();
+</script>
+
+<% } %>
+
+

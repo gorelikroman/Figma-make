@@ -1,0 +1,243 @@
+<%
+/**
+ * Main Radio Button Component
+ * 
+ * @param {boolean} [checked=false] - Whether the radio button is checked
+ * @param {boolean} [disabled=false] - Whether the radio button is disabled
+ * @param {string} [label=''] - Optional label text next to radio button
+ * @param {string} [name=''] - Name attribute for radio group (required for grouping)
+ * @param {string} [value=''] - Value attribute for the radio button
+ * @param {string} [className=''] - Additional CSS classes to override defaults
+ * @param {string} [radioId=''] - ID for the radio button element
+ * @param {object} [handlers={}] - Event handlers (e.g., { click: 'handleRadioClick' })
+ * @param {object} [dataTags={}] - Data attributes to add to the radio button
+ */
+
+// Extract props as object with defaults
+const props = {
+    checked: locals.checked || false,
+    disabled: locals.disabled || false,
+    label: locals.label || '',
+    name: locals.name || '',
+    value: locals.value || '',
+    className: locals.className || '',
+    radioId: locals.radioId || '',
+    handlers: locals.handlers || {},
+    dataTags: locals.dataTags || {}
+};
+
+// Generate data attributes string
+let dataAttributes = '';
+
+// Add custom data tags
+for (const [key, value] of Object.entries(props.dataTags)) {
+    dataAttributes += ` data-${key}="${value}"`;
+}
+
+// Add handler attributes (data-onclick, etc.)
+for (const [eventType, handlerName] of Object.entries(props.handlers)) {
+    if (handlerName) {
+        dataAttributes += ` data-on${eventType}="${handlerName}"`;
+    }
+}
+
+// Base classes for radio container
+const containerClasses = 'relative inline-flex items-center gap-3 cursor-pointer';
+const disabledClasses = 'cursor-not-allowed pointer-events-none';
+
+// Base classes for radio button (20px x 20px, offset 2px from container edge)
+const radioBaseClasses = 'absolute left-[2px] top-[2px] w-[20px] h-[20px] rounded-full transition-all duration-200 flex items-center justify-center';
+const radioUncheckedClasses = 'border border-border-default bg-transparent';
+const radioCheckedClasses = 'border border-border-primary bg-transparent';
+const radioDisabledUncheckedClasses = 'border border-border-disabled bg-transparent';
+const radioDisabledCheckedClasses = 'border border-border-disabled bg-transparent';
+
+// Determine radio state classes based on disabled and checked state
+let radioStateClasses = '';
+if (props.disabled) {
+    radioStateClasses = props.checked ? radioDisabledCheckedClasses : radioDisabledUncheckedClasses;
+} else {
+    radioStateClasses = props.checked ? radioCheckedClasses : radioUncheckedClasses;
+}
+
+// Determine inner circle background color
+const innerCircleBg = props.disabled ? 'bg-[#ebf0f7]' : 'bg-surface-primary';
+
+// Container size: 24px x 24px to accommodate 20px radio + 2px offset on each side
+%>
+
+<label class="<%= containerClasses %> <%= props.disabled ? disabledClasses : '' %> <%= props.className %>" <% if (props.radioId) { %>for="<%= props.radioId %>"<% } %>>
+    <!-- Hidden native radio button for accessibility -->
+    <input 
+        type="radio"
+        <% if (props.radioId) { %>id="<%= props.radioId %>"<% } %>
+        <% if (props.name) { %>name="<%= props.name %>"<% } %>
+        <% if (props.value) { %>value="<%= props.value %>"<% } %>
+        <% if (props.checked) { %>checked<% } %>
+        <%= props.disabled ? 'disabled' : '' %>
+        class="sr-only"
+        <%- dataAttributes %>
+    />
+    
+    <!-- Visual radio button container (24px x 24px) -->
+    <div class="relative w-[24px] h-[24px] flex-shrink-0">
+        <!-- Radio button circle -->
+        <div class="<%= radioBaseClasses %> <%= radioStateClasses %>">
+            <% if (props.checked) { %>
+                <!-- Inner circle (14px x 14px) -->
+                <div class="w-[14px] h-[14px] rounded-full <%= innerCircleBg %>"></div>
+            <% } %>
+        </div>
+    </div>
+    
+    <% if (props.label) { %>
+    <!-- Label text -->
+    <span class="font-body text-[18px] leading-[23px] select-none <%= props.disabled ? 'text-text-disabled' : 'text-text-primary' %>">
+        <%= props.label %>
+    </span>
+    <% } %>
+</label>
+
+<% if (props.radioId && !props.disabled) { %>
+<script>
+(function() {
+    const radio = document.getElementById('<%= props.radioId %>');
+    if (!radio) return;
+    
+    // ============================================
+    // COMPONENT STATE MANAGER
+    // ============================================
+    let isChecked = <%= props.checked ? 'true' : 'false' %>;
+    let isHovered = false;
+    
+    const RadioComponent = {
+        /**
+         * Toggle radio state
+         */
+        toggle: function() {
+            isChecked = !isChecked;
+            radio.checked = isChecked;
+            this.updateVisualState();
+        },
+        
+        /**
+         * Set radio checked state
+         * @param {boolean} checked - Whether radio should be checked
+         */
+        setChecked: function(checked) {
+            isChecked = checked;
+            radio.checked = isChecked;
+            this.updateVisualState();
+        },
+        
+        /**
+         * Get current checked state
+         * @returns {boolean}
+         */
+        getChecked: function() {
+            return isChecked;
+        },
+        
+        /**
+         * Update visual state of radio button
+         */
+        updateVisualState: function() {
+            const box = radio.parentElement.querySelector('.relative.w-\\[24px\\]');
+            if (!box) return;
+            
+            const radioCircle = box.querySelector('div');
+            if (!radioCircle) return;
+            
+            // Remove all state classes
+            radioCircle.classList.remove('border', 'border-border-default', 'border-border-primary', 'border-border-focus', 'border-border-disabled', 'bg-transparent');
+            
+            // Remove inner circle if exists
+            const innerCircle = radioCircle.querySelector('.w-\\[14px\\]');
+            if (innerCircle) innerCircle.remove();
+            
+            // If disabled, use disabled styles (no hover effects)
+            if (radio.disabled) {
+                if (isChecked) {
+                    // Disabled checked: border-border-disabled, inner circle bg-[#ebf0f7]
+                    radioCircle.classList.add('border', 'border-border-disabled', 'bg-transparent');
+                    const innerCircleElement = document.createElement('div');
+                    innerCircleElement.className = 'w-[14px] h-[14px] rounded-full bg-[#ebf0f7]';
+                    radioCircle.appendChild(innerCircleElement);
+                } else {
+                    // Disabled unchecked: border-border-disabled
+                    radioCircle.classList.add('border', 'border-border-disabled', 'bg-transparent');
+                }
+            } else {
+                // Apply appropriate classes based on checked and hover state
+                if (isChecked) {
+                    if (isHovered) {
+                        // Hover checked: border-border-focus, inner circle bg-brand-green_light-500
+                        radioCircle.classList.add('border', 'border-border-focus', 'bg-transparent');
+                        const innerCircleElement = document.createElement('div');
+                        innerCircleElement.className = 'w-[14px] h-[14px] rounded-full bg-brand-green_light-500';
+                        radioCircle.appendChild(innerCircleElement);
+                    } else {
+                        // Idle checked: border-border-primary, inner circle bg-surface-primary
+                        radioCircle.classList.add('border', 'border-border-primary', 'bg-transparent');
+                        const innerCircleElement = document.createElement('div');
+                        innerCircleElement.className = 'w-[14px] h-[14px] rounded-full bg-surface-primary';
+                        radioCircle.appendChild(innerCircleElement);
+                    }
+                } else {
+                    if (isHovered) {
+                        // Hover unchecked: border-border-focus
+                        radioCircle.classList.add('border', 'border-border-focus', 'bg-transparent');
+                    } else {
+                        // Idle unchecked: border-border-default
+                        radioCircle.classList.add('border', 'border-border-default', 'bg-transparent');
+                    }
+                }
+            }
+        }
+    };
+    
+    // Initialize visual state
+    RadioComponent.updateVisualState();
+    
+    // Handle hover events on the label (only if not disabled)
+    if (!radio.disabled) {
+        const label = radio.closest('label');
+        if (label) {
+            label.addEventListener('mouseenter', function() {
+                isHovered = true;
+                RadioComponent.updateVisualState();
+            });
+            
+            label.addEventListener('mouseleave', function() {
+                isHovered = false;
+                RadioComponent.updateVisualState();
+            });
+            
+            // Handle click to toggle radio (allow unchecking when already checked)
+            label.addEventListener('click', function(e) {
+                // If already checked, prevent default and toggle off
+                if (isChecked) {
+                    e.preventDefault();
+                    RadioComponent.toggle();
+                }
+                // If unchecked, let default behavior handle it (will trigger change event)
+            });
+        }
+    } else {
+        // Ensure disabled state is visually correct (no hover effects)
+        isHovered = false;
+    }
+    
+    // Handle native radio change (for accessibility and when clicking unchecked radio)
+    radio.addEventListener('change', function() {
+        isChecked = radio.checked;
+        RadioComponent.updateVisualState();
+    });
+    
+    // Expose component methods globally for external access
+    radio._component = RadioComponent;
+})();
+</script>
+<% } %>
+
+

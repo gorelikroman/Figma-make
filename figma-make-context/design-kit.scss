@@ -1,0 +1,79 @@
+// ==========================================================================
+// Design Kit — Component Styles (v2025)
+// ==========================================================================
+// This file contains styles for the Design Kit EJS components located at:
+//   cms/templates/html/front_v25/design_kit/components/
+//
+// Compiled to: public/css/v_2025/design-kit.css
+// Build:       npm run build:scss   (or npm run build:css)
+// ==========================================================================
+
+// ---------------------------------------------------------------------------
+// Image Component — blur-up placeholder
+// ---------------------------------------------------------------------------
+.blurred-img {
+  background-repeat: no-repeat;
+  background-size: cover;
+  position: relative;
+
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    animation: pulse 2.5s infinite;
+    background-color: rgba(255, 255, 255, 0.5);
+    z-index: 1;
+  }
+
+  &.loaded::before {
+    animation: none;
+    content: none;
+  }
+
+  &.loaded {
+    background-image: none !important;
+  }
+
+  img {
+    opacity: 0;
+  }
+
+  &.loaded img {
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0%   { opacity: 0; }
+  50%  { opacity: 0.3; }
+  100% { opacity: 0; }
+}
+
+// ---------------------------------------------------------------------------
+// Loading Spinner — shared by OTC product carousels & load-more buttons
+// ---------------------------------------------------------------------------
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+// ---------------------------------------------------------------------------
+// Animation Accessibility — Reduced motion
+// ---------------------------------------------------------------------------
+@media (prefers-reduced-motion: reduce) {
+  .animated-gradient-line {
+    display: none !important;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Animation Shimmer — Static gradient lines (no animations for perf)
+// ---------------------------------------------------------------------------
+.animated-gradient-line {
+  contain: layout style paint;
+}

@@ -1,0 +1,267 @@
+<%
+/**
+ * Main Checkbox Component
+ * 
+ * @param {boolean} [checked=false] - Whether the checkbox is checked
+ * @param {boolean} [disabled=false] - Whether the checkbox is disabled
+ * @param {string} [status='default'] - Status: 'default' (shows checkmark) or 'indeterminate' (shows horizontal bar)
+ * @param {string} [label=''] - Optional label text next to checkbox
+ * @param {string} [className=''] - Additional CSS classes to override defaults
+ * @param {string} [checkboxId=''] - ID for the checkbox element
+ * @param {object} [handlers={}] - Event handlers (e.g., { click: 'handleCheckboxClick' })
+ * @param {object} [dataTags={}] - Data attributes to add to the checkbox
+ */
+
+// Extract props as object with defaults
+const props = {
+    checked: locals.checked || false,
+    disabled: locals.disabled || false,
+    status: locals.status || 'default', // 'default' or 'indeterminate'
+    label: locals.label || '',
+    className: locals.className || '',
+    checkboxId: locals.checkboxId || '',
+    handlers: locals.handlers || {},
+    dataTags: locals.dataTags || {}
+};
+
+// Generate data attributes string
+let dataAttributes = '';
+
+// Add custom data tags
+for (const [key, value] of Object.entries(props.dataTags)) {
+    dataAttributes += ` data-${key}="${value}"`;
+}
+
+// Add handler attributes (data-onclick, etc.)
+for (const [eventType, handlerName] of Object.entries(props.handlers)) {
+    if (handlerName) {
+        dataAttributes += ` data-on${eventType}="${handlerName}"`;
+    }
+}
+
+// Checkmark SVG - 12px x 12px, centered
+const checkmarkSvg = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+// Base classes for checkbox container
+const containerClasses = 'relative inline-flex items-center gap-3 cursor-pointer';
+const disabledClasses = 'cursor-not-allowed pointer-events-none';
+
+// Base classes for checkbox box (20px x 20px, offset 2px from container edge)
+const boxBaseClasses = 'absolute left-[2px] top-[2px] w-[20px] h-[20px] rounded-[2px] transition-all duration-200 flex items-center justify-center';
+const boxUncheckedClasses = 'border border-border-default bg-transparent';
+const boxCheckedClasses = 'bg-surface-primary border-0';
+
+// Container size: 24px x 24px to accommodate 20px box + 2px offset on each side
+%>
+
+<label class="<%= containerClasses %> <%= props.disabled ? disabledClasses : '' %> <%= props.className %>" <% if (props.checkboxId) { %>for="<%= props.checkboxId %>"<% } %>>
+    <!-- Hidden native checkbox for accessibility -->
+    <input 
+        type="checkbox"
+        <% if (props.checkboxId) { %>id="<%= props.checkboxId %>"<% } %>
+        <% if (props.checked) { %>checked<% } %>
+        <%= props.disabled ? 'disabled' : '' %>
+        class="sr-only"
+        <%- dataAttributes %>
+    />
+    
+    <!-- Visual checkbox box container (24px x 24px) -->
+    <div class="relative w-[24px] h-[24px] flex-shrink-0">
+        <!-- Checkbox box -->
+        <div class="<%= boxBaseClasses %> <%= props.checked ? (props.disabled ? 'bg-[#ebf0f7] border-0' : boxCheckedClasses) : (props.disabled ? 'border border-border-disabled bg-transparent' : boxUncheckedClasses) %>">
+            <% if (props.checked) { %>
+                <% if (props.status === 'indeterminate') { %>
+                    <!-- Indeterminate symbol (horizontal bar) -->
+                    <% if (props.disabled) { %>
+                        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[10px] h-[2px] bg-[#d1d6e3] rounded-[35px]"></div>
+                    <% } else { %>
+                        <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[10px] h-[2px] bg-white rounded-[35px]"></div>
+                    <% } %>
+                <% } else { %>
+                    <!-- Checkmark icon (12px x 12px, centered) -->
+                    <div class="w-[12px] h-[12px] flex items-center justify-center">
+                        <% if (props.disabled) { %>
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3L4.5 8.5L2 6" stroke="#d1d6e3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        <% } else { %>
+                            <%- checkmarkSvg %>
+                        <% } %>
+                    </div>
+                <% } %>
+            <% } %>
+        </div>
+    </div>
+    
+    <% if (props.label) { %>
+    <!-- Label text -->
+    <span class="font-body text-[18px] leading-[23px] select-none <%= props.disabled ? 'text-text-disabled' : 'text-text-primary' %>">
+        <%= props.label %>
+    </span>
+    <% } %>
+</label>
+
+<% if (props.checkboxId && !props.disabled) { %>
+<script>
+(function() {
+    const checkbox = document.getElementById('<%= props.checkboxId %>');
+    if (!checkbox) return;
+    
+    // ============================================
+    // COMPONENT STATE MANAGER
+    // ============================================
+    let isChecked = <%= props.checked ? 'true' : 'false' %>;
+    let isHovered = false;
+    let status = '<%= props.status %>'; // 'default' or 'indeterminate'
+    
+    const CheckboxComponent = {
+        /**
+         * Toggle checkbox state
+         */
+        toggle: function() {
+            isChecked = !isChecked;
+            checkbox.checked = isChecked;
+            this.updateVisualState();
+        },
+        
+        /**
+         * Set checkbox checked state
+         * @param {boolean} checked - Whether checkbox should be checked
+         */
+        setChecked: function(checked) {
+            isChecked = checked;
+            checkbox.checked = isChecked;
+            this.updateVisualState();
+        },
+        
+        /**
+         * Get current checked state
+         * @returns {boolean}
+         */
+        getChecked: function() {
+            return isChecked;
+        },
+        
+        /**
+         * Set status (default or indeterminate)
+         * @param {string} newStatus - 'default' or 'indeterminate'
+         */
+        setStatus: function(newStatus) {
+            status = newStatus;
+            this.updateVisualState();
+        },
+        
+        /**
+         * Update visual state of checkbox
+         */
+        updateVisualState: function() {
+            const box = checkbox.parentElement.querySelector('.relative.w-\\[24px\\]');
+            if (!box) return;
+            
+            const checkboxBox = box.querySelector('div');
+            if (!checkboxBox) return;
+            
+            // Check if disabled
+            const isDisabled = checkbox.disabled;
+            
+            // Remove all state classes
+            checkboxBox.classList.remove('border', 'border-border-default', 'border-border-focus', 'border-border-disabled', 'bg-transparent', 'bg-surface-primary', 'bg-brand-green_light-500', 'bg-[#ebf0f7]', 'border-0');
+            
+            // Remove all symbols (checkmark and indeterminate)
+            // Remove checkmark (has w-[12px] class)
+            const checkmarkContainer = checkboxBox.querySelector('.w-\\[12px\\].h-\\[12px\\]');
+            if (checkmarkContainer) checkmarkContainer.remove();
+            // Remove indeterminate symbol (has w-[10px] h-[2px] classes)
+            const indeterminateContainer = checkboxBox.querySelector('.w-\\[10px\\].h-\\[2px\\]');
+            if (indeterminateContainer) indeterminateContainer.remove();
+            
+            // Apply appropriate classes based on checked, hover, and disabled state
+            if (isDisabled) {
+                // Disabled state - no hover effects
+                if (isChecked) {
+                    // Disabled checked: bg-[#ebf0f7]
+                    checkboxBox.classList.add('bg-[#ebf0f7]', 'border-0');
+                    
+                    // Show symbol based on status with disabled icon color
+                    if (status === 'indeterminate') {
+                        // Show indeterminate symbol (horizontal bar) with disabled color
+                        const indeterminateSymbol = document.createElement('div');
+                        indeterminateSymbol.className = 'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[10px] h-[2px] bg-[#d1d6e3] rounded-[35px]';
+                        checkboxBox.appendChild(indeterminateSymbol);
+                    } else {
+                        // Show checkmark with disabled icon color
+                        const checkmarkSymbol = document.createElement('div');
+                        checkmarkSymbol.className = 'w-[12px] h-[12px] flex items-center justify-center';
+                        checkmarkSymbol.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3L4.5 8.5L2 6" stroke="#d1d6e3" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                        checkboxBox.appendChild(checkmarkSymbol);
+                    }
+                } else {
+                    // Disabled unchecked: border-border-disabled
+                    checkboxBox.classList.add('border', 'border-border-disabled', 'bg-transparent');
+                }
+            } else {
+                // Enabled state - normal hover behavior
+                if (isChecked) {
+                    if (isHovered) {
+                        // Hover checked: bg-brand-green_light-500 (#61a333)
+                        checkboxBox.classList.add('bg-brand-green_light-500', 'border-0');
+                    } else {
+                        // Idle checked: bg-surface-primary
+                        checkboxBox.classList.add('bg-surface-primary', 'border-0');
+                    }
+                    
+                    // Show symbol based on status
+                    if (status === 'indeterminate') {
+                        // Show indeterminate symbol (horizontal bar)
+                        const indeterminateSymbol = document.createElement('div');
+                        indeterminateSymbol.className = 'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[10px] h-[2px] bg-white rounded-[35px]';
+                        checkboxBox.appendChild(indeterminateSymbol);
+                    } else {
+                        // Show checkmark
+                        const checkmarkSymbol = document.createElement('div');
+                        checkmarkSymbol.className = 'w-[12px] h-[12px] flex items-center justify-center';
+                        checkmarkSymbol.innerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 3L4.5 8.5L2 6" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+                        checkboxBox.appendChild(checkmarkSymbol);
+                    }
+                } else {
+                    if (isHovered) {
+                        // Hover unchecked: border-border-focus (#61a333)
+                        checkboxBox.classList.add('border', 'border-border-focus', 'bg-transparent');
+                    } else {
+                        // Idle unchecked: border-border-default
+                        checkboxBox.classList.add('border', 'border-border-default', 'bg-transparent');
+                    }
+                }
+            }
+        }
+    };
+    
+    // Initialize visual state
+    CheckboxComponent.updateVisualState();
+    
+    // Handle hover events on the label (only if not disabled)
+    if (!checkbox.disabled) {
+        const label = checkbox.closest('label');
+        if (label) {
+            label.addEventListener('mouseenter', function() {
+                isHovered = true;
+                CheckboxComponent.updateVisualState();
+            });
+            
+            label.addEventListener('mouseleave', function() {
+                isHovered = false;
+                CheckboxComponent.updateVisualState();
+            });
+        }
+    }
+    
+    // Handle native checkbox change (for accessibility and label clicks)
+    // Since checkbox is inside a label, clicking anywhere on label will toggle checkbox naturally
+    checkbox.addEventListener('change', function() {
+        isChecked = checkbox.checked;
+        CheckboxComponent.updateVisualState();
+    });
+    
+    // Expose component methods globally for external access
+    checkbox._component = CheckboxComponent;
+})();
+</script>
+<% } %>
