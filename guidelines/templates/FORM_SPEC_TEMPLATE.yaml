@@ -1,0 +1,71 @@
+version: "0.1.0"
+spec_id: "replace-with-spec-id"
+created_at: "YYYY-MM-DD"
+owner: "replace-with-owner"
+
+context:
+  product_area: ""
+  screen_name: ""
+  form_name: ""
+  platform: "web" # web | mobile
+  viewport: "" # e.g. desktop, tablet, mobile
+
+objectives:
+  primary_goal: ""
+  secondary_goal: []
+
+constraints:
+  required_rules: []      # rule ids that MUST pass
+  optional_rules: []      # rule ids that SHOULD pass
+  forbidden_patterns: []
+
+layout:
+  container:
+    type: ""
+    max_width: ""
+    alignment: ""
+  sections: []
+  action_group:
+    orientation: ""      # row | column
+    reason: ""
+    gap_token: ""
+
+fields:
+  - id: ""
+    type: ""             # text | email | password | select | checkbox | radio | switch | textarea
+    label: ""
+    required: false
+    validation:
+      rules: []
+      messages: []
+    helper_text: ""
+    default_value: ""
+
+actions:
+  primary:
+    label: ""
+    style: ""            # solid | outline | ghost
+    color: ""
+  secondary: []
+
+spacing:
+  vertical_rhythm_token: ""
+  field_gap_token: ""
+  section_gap_token: ""
+
+states:
+  required:
+    - default
+    - focus
+    - error
+    - success
+    - disabled
+
+accessibility:
+  keyboard_navigation: ""
+  aria_requirements: []
+  error_announcement: ""
+
+notes:
+  assumptions: []
+  open_questions: []

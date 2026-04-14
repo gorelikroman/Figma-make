@@ -1,0 +1,55 @@
+version: "0.1.0"
+ruleset_id: "replace-with-id"
+owner: "replace-with-owner"
+last_updated: "YYYY-MM-DD"
+
+meta:
+  scope: "forms"
+  status: "draft" # draft | active | deprecated
+  notes: ""
+
+# Заполняй только фактами и проверяемыми условиями.
+# Не использовать размытые формулировки.
+rules:
+  - id: "RULE-FORM-001"
+    title: ""
+    severity: "error" # error | warning | info
+    priority: "P0" # P0 | P1 | P2
+    scope:
+      - "forms"
+      - "buttons"
+
+    conditions:
+      all:
+        - field: ""
+          op: "equals" # equals | not_equals | in | not_in | exists | gt | gte | lt | lte
+          value: ""
+      any: []
+      none: []
+
+    must:
+      - check_id: ""
+        description: ""
+
+    must_not:
+      - check_id: ""
+        description: ""
+
+    fallback:
+      on_conflict: ""
+      on_missing_data: ""
+
+    evidence:
+      components: []
+      tokens: []
+      docs: []
+
+    examples:
+      positive: []
+      negative: []
+
+    lifecycle:
+      status: "draft"
+      owner: ""
+      approved_by: ""
+      approved_at: ""
