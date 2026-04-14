@@ -1,252 +1,139 @@
-# 🎨 UI Kit Starter Project
+# DoktorABC UI Kit
 
-Production-ready React + TypeScript starter template with complete design system.
-
-> **👉 New to this project?**  
-> **Quick:** [GET_STARTED.md](./GET_STARTED.md) (30 sec)  
-> **First Steps:** [START_HERE.md](./START_HERE.md) (5 min)  
-> **All Docs:** [DOCUMENTATION_INDEX.md](./DOCUMENTATION_INDEX.md)
+React + TypeScript design system with 11 components, 600+ design tokens, and 48 text styles.
 
 ---
 
-## 📦 What's Included
+## For AI Services — Start Here
 
-### ✅ Complete Design System
-- **11 UI Components** - Buttons, Forms, Navigation, Indicators
-- **48 Text Styles** - Display, Headings, Body, Labels, Buttons, Captions
-- **Token System** - BRAND → ALIAS → MAPPED architecture
-- **Color Palette** - 7 color schemes with semantic naming
-- **Typography** - Poppins (headings) + Roboto (body)
-- **Responsive** - Mobile-first with 768px breakpoint
+Use this section to configure any AI coding service. Point it to this README as the entry file.
 
-### 📁 Project Structure
+### Figma Make
+
+Upload **one** of these as context:
+
+| Option | File | When to use |
+|--------|------|-------------|
+| Single file | `figma-make-bundle.md` | Simple, all-in-one context |
+| Split context | `figma-make-context/` folder | When the service supports multiple files |
+
+### Claude Code / Cursor / Windsurf
+
+Point the agent to this repository. It will auto-discover:
+- `.github/copilot-instructions.md` — Global design system rules
+- `.github/instructions/ui-forms.instructions.md` — Form-specific rules
+- `.github/prompts/generate-form.prompt.md` — Form generation prompt
+
+### GitHub Copilot (VS Code)
+
+No setup needed. Copilot reads `.github/copilot-instructions.md` automatically.
+
+### Lovable / Bolt / v0
+
+Paste this README as context, or link the GitHub repo. Key facts the AI needs:
+
+1. Components are in `src/app/components/design-kit/` — import from barrel `index.ts`
+2. All styling uses CSS variables from `src/styles/tokens.css`
+3. Token hierarchy: `BRAND → ALIAS → MAPPED` — use `var(--mapped-*)` in components
+4. Fonts: Poppins (headings) + Roboto (body)
+5. Responsive breakpoint: 768px (mobile-first, `lg:` for desktop)
+
+---
+
+## Project Structure
 
 ```
-/src
-├── /app
-│   ├── App.tsx                      # ← Start here
-│   └── /components
-│       └── /design-kit              # 11 ready-to-use components
-│           ├── MainButton.tsx
-│           ├── IconButton.tsx
-│           ├── MainCheckbox.tsx
-│           ├── MainRadio.tsx
-│           ├── MainSwitcher.tsx
-│           ├── MainProgressBar.tsx
-│           ├── MainInput.tsx
-│           ├── MainDropdown.tsx
-│           ├── MainAccordion.tsx
-│           ├── MainBreadcrumbs.tsx
-│           ├── Image.tsx
-│           └── index.ts             # Barrel export
-│
-└── /styles
-    ├── tokens.css                   # Design tokens (BRAND/ALIAS/MAPPED)
-    ├── fonts.css                    # Poppins & Roboto fonts
-    └── theme.css                    # Base styles + Tailwind config
-
-📚 Documentation
-├── QUICK_START.md                   # 3-minute quickstart
-├── UI_KIT_README.md                 # Component overview
-├── USAGE_GUIDE.md                   # Full API reference
-├── TEXT_STYLES_GUIDE.md             # Typography system
-└── COPY_TO_PROJECT.md               # Integration guide
+src/
+├── app/
+│   ├── App.tsx                          # Application entry
+│   └── components/
+│       └── design-kit/                  # 11 production components
+│           ├── MainButton.tsx           # 3 styles × 7 colors
+│           ├── IconButton.tsx           # 4 colors × 2 shapes
+│           ├── MainInput.tsx            # Text input with validation
+│           ├── MainDropdown.tsx         # Select dropdown
+│           ├── MainCheckbox.tsx         # Checkbox
+│           ├── MainRadio.tsx            # Radio button
+│           ├── MainSwitcher.tsx         # Toggle switch
+│           ├── MainProgressBar.tsx      # Progress bar
+│           ├── MainAccordion.tsx        # Accordion
+│           ├── MainBreadcrumbs.tsx      # Breadcrumbs
+│           ├── Image.tsx               # Image with blur-up
+│           └── index.ts                # Barrel export
+├── styles/
+│   ├── tokens.css                       # 600+ design tokens
+│   ├── fonts.css                        # Font imports
+│   └── theme.css                        # Base styles
+docs/
+├── components.md                        # Full component API
+├── typography.md                        # 48 text styles
+├── tokens.md                            # Token system reference
+└── integration.md                       # How to add to another project
+guidelines/
+├── examples/                            # AI form rule cards
+└── templates/                           # Rule card templates
+.github/
+├── copilot-instructions.md              # AI workspace rules
+├── instructions/ui-forms.instructions.md
+└── prompts/generate-form.prompt.md
+figma-make-bundle.md                     # Single-file context for Figma Make
+figma-make-context/                      # Split context for Figma Make
 ```
 
 ---
 
-## 🚀 Quick Start
-
-### 1. Start Using Components
+## Quick Start
 
 ```tsx
-// /src/app/App.tsx
 import { MainButton, MainInput, MainCheckbox } from './components/design-kit';
 
 export default function App() {
   return (
-    <div className="p-6">
-      <MainInput label="Email" type="email" />
-      <MainCheckbox label="I agree" />
+    <div className="p-6 space-y-4">
+      <MainInput label="Email" type="email" placeholder="your@email.com" />
+      <MainCheckbox label="I agree to terms" />
       <MainButton text="Submit" color="primary" style="solid" />
     </div>
   );
 }
 ```
 
-### 2. Use Typography System
-
-```tsx
-<h1 style={{
-  fontFamily: 'var(--text-h1-family)',
-  fontSize: 'var(--text-h1-size)',
-  fontWeight: 'var(--text-h1-weight)',
-  lineHeight: 'var(--text-h1-line-height)',
-  color: 'var(--mapped-text-primary)'
-}}>
-  Page Title
-</h1>
-
-<p style={{
-  fontFamily: 'var(--text-body-md-family)',
-  fontSize: 'var(--text-body-md-size)',
-  fontWeight: 'var(--text-body-md-weight)',
-  lineHeight: 'var(--text-body-md-line-height)',
-  color: 'var(--mapped-text-secondary)'
-}}>
-  Your content here
-</p>
-```
-
-### 3. Use CSS Variables
-
-```tsx
-<div style={{
-  background: 'var(--mapped-surface-card)',
-  border: '1px solid var(--mapped-border-subtle)',
-  borderRadius: 'var(--size-radius-m)',
-  padding: 'var(--size-gap-16)'
-}}>
-  Card content
-</div>
-```
-
 ---
 
-## 📚 Documentation
+## Design System
 
-| File | Description |
-|------|-------------|
-| **[QUICK_START.md](./QUICK_START.md)** | 3-minute guide with examples |
-| **[UI_KIT_README.md](./UI_KIT_README.md)** | Component overview |
-| **[USAGE_GUIDE.md](./USAGE_GUIDE.md)** | Full API reference |
-| **[TEXT_STYLES_GUIDE.md](./TEXT_STYLES_GUIDE.md)** | Complete typography system |
-| **[COPY_TO_PROJECT.md](./COPY_TO_PROJECT.md)** | How to copy to existing project |
-
----
-
-## 🎨 Available Components
-
-```tsx
-import { 
-  MainButton,        // Primary buttons with 7 colors × 3 styles
-  IconButton,        // Icon-only buttons
-  MainCheckbox,      // Checkboxes with animations
-  MainRadio,         // Radio buttons
-  MainSwitcher,      // Toggle switches
-  MainProgressBar,   // Progress indicators
-  MainInput,         // Text inputs with validation
-  MainDropdown,      // Select dropdowns
-  MainAccordion,     // Expandable sections
-  MainBreadcrumbs,   // Navigation breadcrumbs
-  Image              // Images with blur-up effect
-} from './components/design-kit';
+**Token hierarchy** (never bypass):
+```
+BRAND (raw hex, px)  →  ALIAS (semantic)  →  MAPPED (component-level)
 ```
 
----
-
-## 🎯 Text Style System
-
-### Categories
-- **Display** (3 styles) - 72px, 64px, 52px - Hero sections
-- **Headings** (6 styles) - H1-H6 - Content hierarchy
-- **Body** (5 styles) - XL, LG, MD, SM, XS - Readable text
-- **Labels** (4 styles) - Forms and tags
-- **Buttons** (3 styles) - Interactive elements
-- **Meta** (2 styles) - Caption & Overline
-
-### Example
-
-```tsx
-// Display 1 - Hero title
-fontFamily: 'var(--text-display-1-family)'    // Poppins
-fontSize: 'var(--text-display-1-size)'        // 72px
-fontWeight: 'var(--text-display-1-weight)'    // 700 (Bold)
-lineHeight: 'var(--text-display-1-line-height)' // 1.1
-
-// Body Medium - Standard text
-fontFamily: 'var(--text-body-md-family)'      // Roboto
-fontSize: 'var(--text-body-md-size)'          // 16px
-fontWeight: 'var(--text-body-md-weight)'      // 400 (Regular)
-lineHeight: 'var(--text-body-md-line-height)' // 1.5
-```
-
-See **[TEXT_STYLES_GUIDE.md](./TEXT_STYLES_GUIDE.md)** for all 48 styles.
-
----
-
-## 🎨 Design Token System
-
-### Architecture
-```
-BRAND (base colors/sizes)
-  ↓
-ALIAS (semantic names)
-  ↓
-MAPPED (component usage)
-```
-
-### Color Categories
-- **Primary** - Green dark (#00734a)
-- **Secondary** - Green light (#7aba47)
-- **Neutral** - Gray scale (17 shades)
-- **Error** - Red (#cc0000)
-- **Warning** - Orange (#f08e00)
-- **Info** - Blue (#257db0)
-
-### Most Used Variables
-
+**Key variables:**
 ```css
-/* Surfaces */
-var(--mapped-surface-background)      /* Page background */
-var(--mapped-surface-card)            /* Card background */
-var(--mapped-surface-primary)         /* Primary color */
-
-/* Text */
-var(--mapped-text-primary)            /* Main text */
-var(--mapped-text-secondary)          /* Secondary text */
-var(--mapped-text-tertiary)           /* Light text */
-
-/* Borders */
-var(--mapped-border-subtle)           /* Light border */
-var(--mapped-border-default)          /* Standard border */
-var(--mapped-border-focus)            /* Focus state */
-
-/* Spacing */
-var(--size-gap-8)                     /* 8px */
-var(--size-gap-16)                    /* 16px */
-var(--size-gap-24)                    /* 24px */
-
-/* Radius */
-var(--size-radius-s)                  /* 8px */
-var(--size-radius-m)                  /* 12px */
-var(--size-radius-l)                  /* 16px */
+var(--mapped-surface-background)   /* Page background */
+var(--mapped-surface-card)         /* Card background */
+var(--mapped-text-primary)         /* Main text */
+var(--mapped-text-secondary)       /* Secondary text */
+var(--mapped-border-subtle)        /* Light border */
+var(--size-gap-16)                 /* Standard spacing */
+var(--size-radius-m)               /* Standard radius (12px) */
 ```
+
+**Colors:** Primary (green), Secondary (light green), Neutral (gray), Error (red), Warning (orange), Info (blue).
+
+**Typography:** 48 styles — Display (3), Headings (6), Body (5), Labels (4), Buttons (3), Meta (2). Pattern: `--text-{style}-{family|size|weight|line-height}`.
 
 ---
 
-## 🔧 Customization
+## Documentation
 
-### Change Primary Color
-
-Edit `/src/styles/tokens.css`:
-
-```css
-/* Change brand primary color */
---brand-green-dark-600: #YOUR_COLOR;
-```
-
-### Change Font
-
-Edit `/src/styles/fonts.css` and `/src/styles/tokens.css`:
-
-```css
-/* Add your font import */
-@import url('https://fonts.googleapis.com/css2?family=YourFont');
-
-/* Update font family */
---font-family-primary: 'YourFont', sans-serif;
-```
+| Document | Content |
+|----------|---------|
+| [docs/components.md](docs/components.md) | All 11 components — props, types, sizes, examples |
+| [docs/typography.md](docs/typography.md) | 48 text styles with usage tables |
+| [docs/tokens.md](docs/tokens.md) | Token architecture, colors, spacing, radius |
+| [docs/integration.md](docs/integration.md) | How to copy this kit into another project |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
+| [ATTRIBUTIONS.md](ATTRIBUTIONS.md) | Third-party credits |
 
 ### Add New Component
 
