@@ -1,42 +1,49 @@
 # DoktorABC UI Kit
 
-React + TypeScript design system with 11 components, 600+ design tokens, and 48 text styles.
+React + TypeScript design system: 11 components, 1400+ design tokens, 48 text styles.
 
 ---
 
-## For AI Services — Start Here
+## Context Map — For Any AI Service
 
-Use this section to configure any AI coding service. Point it to this README as the entry file.
+**Start from this file.** Then load files based on your task.
 
-### Figma Make
+### 1. Design Tokens (source of truth)
+- `src/styles/tokens.css` — All CSS variables: BRAND → ALIAS → MAPPED
+- `src/styles/fonts.css` — Poppins + Roboto font-face declarations
+- `src/styles/theme.css` — Base styles, Tailwind integration
 
-Upload **one** of these as context:
+### 2. React Components (production code)
+- `src/app/components/design-kit/*.tsx` — 11 components
+- `src/app/components/design-kit/index.ts` — Barrel export
 
-| Option | File | When to use |
-|--------|------|-------------|
-| Single file | `figma-make-bundle.md` | Simple, all-in-one context |
-| Split context | `figma-make-context/` folder | When the service supports multiple files |
+### 3. Figma Make EJS Templates (for Figma Make only)
+- `figma-make-context/components/*.ejs` — EJS source blueprints
+- `figma-make-context/tailwind.config.js` — Token → Tailwind class mapping
 
-### Claude Code / Cursor / Windsurf
+### 4. Documentation
+- `docs/components.md` — Full component API (props, types, sizes)
+- `docs/typography.md` — 48 text styles with tables
+- `docs/tokens.md` — Token architecture, colors, spacing, radius
+- `docs/integration.md` — How to copy kit into another project
 
-Point the agent to this repository. It will auto-discover:
-- `.github/copilot-instructions.md` — Global design system rules
+### 5. Design Rules (AI form generation)
+- `.github/copilot-instructions.md` — Global design system constraints
 - `.github/instructions/ui-forms.instructions.md` — Form-specific rules
-- `.github/prompts/generate-form.prompt.md` — Form generation prompt
+- `.github/prompts/generate-form.prompt.md` — Prompt for form generation
+- `guidelines/examples/*.md` — Individual rule cards (16 rules)
 
-### GitHub Copilot (VS Code)
+---
 
-No setup needed. Copilot reads `.github/copilot-instructions.md` automatically.
+## Per-Service Setup
 
-### Lovable / Bolt / v0
-
-Paste this README as context, or link the GitHub repo. Key facts the AI needs:
-
-1. Components are in `src/app/components/design-kit/` — import from barrel `index.ts`
-2. All styling uses CSS variables from `src/styles/tokens.css`
-3. Token hierarchy: `BRAND → ALIAS → MAPPED` — use `var(--mapped-*)` in components
-4. Fonts: Poppins (headings) + Roboto (body)
-5. Responsive breakpoint: 768px (mobile-first, `lg:` for desktop)
+| Service | What to provide |
+|---------|----------------|
+| **Figma Make** | This README + `figma-make-context/` + `src/styles/tokens.css` + `docs/components.md` |
+| **Claude Code / Cursor / Windsurf** | Point to this repo. Reads `.github/` auto. Use `@file` to reference specific docs |
+| **GitHub Copilot** | Auto-reads `.github/copilot-instructions.md`. No setup needed |
+| **Google AI Studio** | Upload: this README + `src/styles/tokens.css` + `docs/components.md` + `docs/tokens.md` |
+| **Lovable / Bolt / v0** | Paste this README as context, or link GitHub repo |
 
 ---
 
@@ -45,39 +52,29 @@ Paste this README as context, or link the GitHub repo. Key facts the AI needs:
 ```
 src/
 ├── app/
-│   ├── App.tsx                          # Application entry
+│   ├── App.tsx
 │   └── components/
-│       └── design-kit/                  # 11 production components
-│           ├── MainButton.tsx           # 3 styles × 7 colors
-│           ├── IconButton.tsx           # 4 colors × 2 shapes
-│           ├── MainInput.tsx            # Text input with validation
-│           ├── MainDropdown.tsx         # Select dropdown
-│           ├── MainCheckbox.tsx         # Checkbox
-│           ├── MainRadio.tsx            # Radio button
-│           ├── MainSwitcher.tsx         # Toggle switch
-│           ├── MainProgressBar.tsx      # Progress bar
-│           ├── MainAccordion.tsx        # Accordion
-│           ├── MainBreadcrumbs.tsx      # Breadcrumbs
-│           ├── Image.tsx               # Image with blur-up
-│           └── index.ts                # Barrel export
+│       └── design-kit/              # 11 production components
+│           ├── MainButton.tsx       # 3 styles × 7 colors
+│           ├── IconButton.tsx       # 4 colors × 2 shapes
+│           ├── MainInput.tsx        # Text input with validation
+│           ├── MainDropdown.tsx     # Select dropdown
+│           ├── MainCheckbox.tsx
+│           ├── MainRadio.tsx
+│           ├── MainSwitcher.tsx
+│           ├── MainProgressBar.tsx
+│           ├── MainAccordion.tsx
+│           ├── MainBreadcrumbs.tsx
+│           ├── Image.tsx
+│           └── index.ts            # Barrel export
 ├── styles/
-│   ├── tokens.css                       # 600+ design tokens
-│   ├── fonts.css                        # Font imports
-│   └── theme.css                        # Base styles
-docs/
-├── components.md                        # Full component API
-├── typography.md                        # 48 text styles
-├── tokens.md                            # Token system reference
-└── integration.md                       # How to add to another project
-guidelines/
-├── examples/                            # AI form rule cards
-└── templates/                           # Rule card templates
-.github/
-├── copilot-instructions.md              # AI workspace rules
-├── instructions/ui-forms.instructions.md
-└── prompts/generate-form.prompt.md
-figma-make-bundle.md                     # Single-file context for Figma Make
-figma-make-context/                      # Split context for Figma Make
+│   ├── tokens.css                   # 1400+ design tokens (single source of truth)
+│   ├── fonts.css                    # Font imports
+│   └── theme.css                    # Base styles
+docs/                                # Human + AI-readable documentation
+guidelines/examples/                 # AI form rule cards
+figma-make-context/                  # EJS templates + Tailwind config (Figma Make only)
+.github/                             # AI agent instructions
 ```
 
 ---
@@ -124,83 +121,9 @@ var(--size-radius-m)               /* Standard radius (12px) */
 
 ---
 
-## Documentation
+## Tech Stack
 
-| Document | Content |
-|----------|---------|
-| [docs/components.md](docs/components.md) | All 11 components — props, types, sizes, examples |
-| [docs/typography.md](docs/typography.md) | 48 text styles with usage tables |
-| [docs/tokens.md](docs/tokens.md) | Token architecture, colors, spacing, radius |
-| [docs/integration.md](docs/integration.md) | How to copy this kit into another project |
-| [CHANGELOG.md](CHANGELOG.md) | Version history |
-| [ATTRIBUTIONS.md](ATTRIBUTIONS.md) | Third-party credits |
-
-### Add New Component
-
-```tsx
-// /src/app/components/design-kit/YourComponent.tsx
-import React from 'react';
-
-export const YourComponent: React.FC<Props> = (props) => {
-  return (
-    <div style={{
-      background: 'var(--mapped-surface-card)',
-      color: 'var(--mapped-text-primary)'
-    }}>
-      {/* Your component */}
-    </div>
-  );
-};
-```
-
-Then export in `/src/app/components/design-kit/index.ts`:
-
-```tsx
-export { YourComponent } from './YourComponent';
-```
-
----
-
-## 📦 Using in Existing Project
-
-See **[COPY_TO_PROJECT.md](./COPY_TO_PROJECT.md)** for step-by-step instructions.
-
-**Quick version:**
-
-1. Copy `/src/app/components/design-kit/` folder
-2. Copy `/src/styles/*.css` files
-3. Import styles in your main file:
-   ```tsx
-   import '../styles/tokens.css';
-   import '../styles/fonts.css';
-   import '../styles/theme.css';
-   ```
-4. Start using components:
-   ```tsx
-   import { MainButton } from './components/design-kit';
-   ```
-
----
-
-## ✅ Features
-
-- ✅ **TypeScript** - Full type safety
-- ✅ **Accessibility** - ARIA labels, keyboard navigation
-- ✅ **Responsive** - Mobile-first design
-- ✅ **Hover Effects** - All interactive states
-- ✅ **Token System** - Consistent design language
-- ✅ **Documentation** - Comprehensive guides
-- ✅ **Production Ready** - Battle-tested components
-
----
-
-## 🏗️ Built With
-
-- **React** - UI framework
-- **TypeScript** - Type safety
-- **Tailwind CSS v4** - Utility-first CSS
-- **CSS Variables** - Design tokens
-- **Google Fonts** - Poppins & Roboto
+React, TypeScript, Tailwind CSS v4, CSS Variables, Poppins + Roboto (Google Fonts).
 
 ---
 

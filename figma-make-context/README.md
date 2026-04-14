@@ -1,15 +1,16 @@
-# Figma Make context
+# Figma Make — EJS Component Templates
 
-Use this folder as the complete, split context set.
+This folder contains EJS source templates for Figma Make component generation.
 
 ## Contents
-- tokens.css (design tokens)
-- tailwind.config.js (Tailwind mapping for tokens)
-- design-kit.scss (shared styles)
-- fonts.scss (font faces)
-- components/*.ejs (component templates)
+- `tailwind.config.js` — Tailwind class mapping for design tokens
+- `components/*.ejs` — EJS blueprints for all 11 React components
+
+## Shared files (not duplicated here)
+- **Tokens:** `src/styles/tokens.css`
+- **Fonts:** `src/styles/fonts.css`
+- **Base styles:** `src/styles/theme.css`
 
 ## How to use
-- Upload/provide all files in this folder to Figma Make.
-- Treat EJS templates as blueprints for React components.
-- Keep Tailwind classes and token variables as the source of truth.
+Provide these EJS templates + the shared style files above as context to Figma Make.
+Treat EJS templates as blueprints; convert to React components using token variables.
