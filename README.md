@@ -8,6 +8,9 @@ React + TypeScript design system: 11 components, 1400+ design tokens, 48 text st
 
 **Start from this file.** Then load files based on your task.
 
+### 0. System Rules (load FIRST in every service)
+- `RULES.md` — Hard constraints: allowed components, tokens, forbidden patterns. Paste as system prompt or attach as first context file.
+
 ### 1. Design Tokens (source of truth)
 - `src/styles/tokens.css` — All CSS variables: BRAND → ALIAS → MAPPED
 - `src/styles/fonts.css` — Poppins + Roboto font-face declarations
@@ -39,11 +42,11 @@ React + TypeScript design system: 11 components, 1400+ design tokens, 48 text st
 
 | Service | What to provide |
 |---------|----------------|
-| **Figma Make** | This README + `figma-make-context/` + `src/styles/tokens.css` + `docs/components.md` |
-| **Claude Code / Cursor / Windsurf** | Point to this repo. Reads `.github/` auto. Use `@file` to reference specific docs |
-| **GitHub Copilot** | Auto-reads `.github/copilot-instructions.md`. No setup needed |
-| **Google AI Studio** | Upload: this README + `src/styles/tokens.css` + `docs/components.md` + `docs/tokens.md` |
-| **Lovable / Bolt / v0** | Paste this README as context, or link GitHub repo |
+| **Figma Make** | `RULES.md` (system prompt) + `figma-make-context/` + `src/styles/tokens.css` + `docs/components.md` |
+| **Claude Code / Cursor** | Point to repo. Attach `RULES.md` as system prompt. `.github/` auto-discovered |
+| **GitHub Copilot** | Auto-reads `.github/copilot-instructions.md` (already includes RULES content) |
+| **Google AI Studio** | System prompt: paste `RULES.md`. Context: `src/styles/tokens.css` + `docs/components.md` + `docs/tokens.md` |
+| **Lovable / Bolt / v0** | Paste `RULES.md` + this README as context, or link GitHub repo |
 
 ---
 
