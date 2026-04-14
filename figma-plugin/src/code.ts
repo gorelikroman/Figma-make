@@ -29,28 +29,30 @@ function traverse(node: SceneNode, violations: Violation[]): void {
 
 // ── Run Lint ────────────────────────────────────────────────────────
 
-function runLint(): Violation[] {
+function runLint(): { violations: Violation[]; hasSelection: boolean } {
   const selection = figma.currentPage.selection;
-  const nodes: readonly SceneNode[] =
-    selection.length > 0 ? selection : figma.currentPage.children;
+
+  if (selection.length === 0) {
+    return { violations: [], hasSelection: false };
+  }
 
   const violations: Violation[] = [];
 
-  for (const node of nodes) {
+  for (const node of selection) {
     traverse(node, violations);
     // Button hierarchy is checked per top-level frame
     violations.push(...checkButtonHierarchy(node));
   }
 
-  return violations;
+  return { violations, hasSelection: true };
 }
 
 // ── Message Handling ────────────────────────────────────────────────
 
 figma.ui.onmessage = (msg: { type: string; nodeId?: string }) => {
   if (msg.type === 'run-lint') {
-    const violations = runLint();
-    figma.ui.postMessage({ type: 'lint-results', violations });
+    const result = runLint();
+    figma.ui.postMessage({ type: 'lint-results', ...result });
   }
 
   if (msg.type === 'select-node' && msg.nodeId) {
@@ -68,5 +70,11 @@ figma.ui.onmessage = (msg: { type: string; nodeId?: string }) => {
 };
 
 // Auto-run on open
-const initialViolations = runLint();
-figma.ui.postMessage({ type: 'lint-results', violations: initialViolations });
+const initialResult = runLint();
+figma.ui.postMessage({ type: 'lint-results', ...initialResult });
+
+// Re-run when selection changes
+figma.on('selectionchange', () => {
+  const result = runLint();
+  figma.ui.postMessage({ type: 'lint-results', ...result });
+});

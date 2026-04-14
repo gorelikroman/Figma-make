@@ -7,6 +7,7 @@ interface Violation {
 }
 
 let allViolations: Violation[] = [];
+let hasSelection = false;
 let activeFilter: string | null = null;
 
 // ── DOM refs ────────────────────────────────────────────────────────
@@ -19,6 +20,14 @@ const runBtn = document.getElementById('run')!;
 // ── Render ──────────────────────────────────────────────────────────
 
 function render(): void {
+  // No selection state
+  if (!hasSelection) {
+    summaryEl.innerHTML = '';
+    filtersEl.innerHTML = '';
+    resultsEl.innerHTML = '<div class="empty"><div class="check">☝</div>Select a frame to lint.<br/>The plugin checks only the selected frame.</div>';
+    return;
+  }
+
   const filtered = activeFilter
     ? allViolations.filter((v) => v.category === activeFilter)
     : allViolations;
@@ -47,7 +56,7 @@ function render(): void {
   // Results list
   if (filtered.length === 0) {
     resultsEl.innerHTML = allViolations.length === 0
-      ? '<div class="empty"><div class="check">✓</div>No design system violations detected.<br/>Select frames or run on the entire page.</div>'
+      ? '<div class="empty"><div class="check">✓</div>No design system violations detected.</div>'
       : '<div class="empty">No violations in this category.</div>';
     return;
   }
@@ -101,6 +110,7 @@ window.onmessage = (event) => {
 
   if (msg.type === 'lint-results') {
     allViolations = msg.violations || [];
+    hasSelection = msg.hasSelection ?? false;
     activeFilter = null;
     render();
   }
