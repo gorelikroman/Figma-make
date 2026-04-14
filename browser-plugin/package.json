@@ -1,0 +1,14 @@
+{
+  "name": "doktorabc-design-lint-browser",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.1.40",
+    "esbuild": "^0.21.0",
+    "typescript": "^5.4.0"
+  }
+}
