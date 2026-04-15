@@ -69,11 +69,13 @@ export function checkColors(node: SceneNode): Violation[] {
   const violations: Violation[] = [];
 
   if ('fills' in node && Array.isArray(node.fills)) {
-    violations.push(...checkPaints(node.fills as readonly Paint[], node, 'Fill'));
+    const fills = checkPaints(node.fills as readonly Paint[], node, 'Fill');
+    for (let i = 0; i < fills.length; i++) violations.push(fills[i]);
   }
 
   if ('strokes' in node && Array.isArray(node.strokes)) {
-    violations.push(...checkPaints(node.strokes as readonly Paint[], node, 'Stroke'));
+    const strokes = checkPaints(node.strokes as readonly Paint[], node, 'Stroke');
+    for (let i = 0; i < strokes.length; i++) violations.push(strokes[i]);
   }
 
   return violations;

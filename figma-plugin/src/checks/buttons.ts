@@ -24,7 +24,8 @@ function collectPrimaryButtons(node: SceneNode): SceneNode[] {
   if (isPrimaryButton(node)) buttons.push(node);
   if ('children' in node) {
     for (const child of (node as ChildrenMixin).children) {
-      buttons.push(...collectPrimaryButtons(child as SceneNode));
+      const sub = collectPrimaryButtons(child as SceneNode);
+      for (let i = 0; i < sub.length; i++) buttons.push(sub[i]);
     }
   }
   return buttons;

@@ -11,13 +11,17 @@ figma.showUI(__html__, { width: 400, height: 520 });
 
 // ── Traversal ───────────────────────────────────────────────────────
 
+function pushAll(target: Violation[], source: Violation[]): void {
+  for (let i = 0; i < source.length; i++) target.push(source[i]);
+}
+
 function traverse(node: SceneNode, violations: Violation[]): void {
   // Per-node checks
-  violations.push(...checkColors(node));
-  violations.push(...checkTypography(node));
-  violations.push(...checkRadius(node));
-  violations.push(...checkSpacing(node));
-  violations.push(...checkTouchTarget(node));
+  pushAll(violations, checkColors(node));
+  pushAll(violations, checkTypography(node));
+  pushAll(violations, checkRadius(node));
+  pushAll(violations, checkSpacing(node));
+  pushAll(violations, checkTouchTarget(node));
 
   // Recurse into children
   if ('children' in node) {
@@ -41,7 +45,7 @@ function runLint(): { violations: Violation[]; hasSelection: boolean } {
   for (const node of selection) {
     traverse(node, violations);
     // Button hierarchy is checked per top-level frame
-    violations.push(...checkButtonHierarchy(node));
+    pushAll(violations, checkButtonHierarchy(node));
   }
 
   return { violations, hasSelection: true };
